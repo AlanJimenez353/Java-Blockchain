@@ -1,15 +1,14 @@
 package com.company;
 
+import java.io.IOException;
+
 public class Main {
 
-    public static void main(String[] args) {
-        System.out.println("Primer commit");
-        System.out.println("segundo");
-        System.out.println("asd");
-        System.out.println("asd");
-        System.out.println("asdasdasd");
+    public static void main(String[] args) throws IOException {
 
-
+        Sistema sistem=new Sistema();
+        sistem.primero();
+        sistem.mostrarListaUsuarios();
     }
 }
 
