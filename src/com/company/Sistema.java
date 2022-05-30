@@ -15,6 +15,7 @@ public class Sistema {
 
     private String USER_PATH;
     private String USUARIOS_PATH;
+    private String TRANSACTIONS_TO_VALIDATE_PATH;
 
 
     public Sistema() {
@@ -34,12 +35,14 @@ public class Sistema {
         AgregarUsuarioAarchivo(tres);
         EliminarUsuarioArchivo(tres);
 
+
     }
 
     //  Setea los paths de las carpetas donde se guardara el archivo de Usuarios
     private void setPaths()    {
         this.USER_PATH=System.getProperty("user.dir");
         this.USUARIOS_PATH=""+USER_PATH+"\\users";
+        this.TRANSACTIONS_TO_VALIDATE_PATH=""+USER_PATH+"\\transactionsToValidate";
     }
 
 
@@ -105,7 +108,14 @@ public class Sistema {
         }
     }
 
+    //MANEJO ARCHIVO Transacciones
+    //AgregarValidaciones
 
+    public void agregarTransaccionArchivo(Transaction transaction) throws IOException {
+        File newTransaction=new File(TRANSACTIONS_TO_VALIDATE_PATH+"\\"+transaction.getId()+".json");
+        ObjectMapper mapper=new ObjectMapper();
+        mapper.writeValue(newTransaction, transaction);
+    }
 
 
 
