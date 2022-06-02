@@ -5,6 +5,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -13,6 +16,7 @@ public class Sistema {
 
     private List<Usuario>listaUsers=new ArrayList<>();
     private HashMap<String,Usuario>mapaUsuarios=new HashMap<>();
+
 
 ///MANEJO ARCHIVOS
 
@@ -130,6 +134,7 @@ public class Sistema {
         }
 
     }
+
     public void mostrarListaUsuarios(){
         for (Usuario e : listaUsers){
             System.out.println(e.toString());
@@ -188,6 +193,87 @@ public class Sistema {
         mapper.writeValue(newTransaction, transaction);
     }
 
+
+//----------------Validacion ingreso por teclado--------
+
+
+    public String ingresarEmail() {
+        String emailNuevo;
+        boolean inspector;
+        Scanner scan = new Scanner(System.in);
+
+        do {
+            System.out.println("Email: ");
+            emailNuevo = scan.nextLine();
+            inspector = validEmail(emailNuevo);
+        } while (!inspector);
+
+        return emailNuevo;
+    }
+
+    public String ingresarPassword() {
+        String password;
+        boolean inspector;
+        Scanner scan = new Scanner(System.in);
+
+        do {
+            System.out.println(" Password : ");
+            password = scan.nextLine();
+            inspector = validPassword(password);
+        } while (!inspector);
+
+        return password;
+    }
+
+    private boolean validPassword(String password) {
+        final int MAX = 8;
+        final int MIN_Uppercase = 1;
+        final int MIN_Lowercase = 1;
+        final int NUM_Digits = 0;
+        int uppercaseCounter = 0;
+        int lowercaseCounter = 0;
+        int digitCounter = 0;
+
+        for (int i = 0; i < password.length(); i++) {
+            char c = password.charAt(i);
+            if (Character.isUpperCase(c))
+                uppercaseCounter++;
+            else if (Character.isLowerCase(c))
+                lowercaseCounter++;
+            else if (Character.isDigit(c))
+                digitCounter++;
+        }
+
+        if (password.length() >= MAX && uppercaseCounter >= MIN_Uppercase && lowercaseCounter >= MIN_Lowercase && digitCounter >= NUM_Digits) {
+            System.out.println("Valid Password");
+            return true;
+        } else {
+            System.out.println(" Su contraseña no contiene lo siguiente:");
+            if (password.length() < MAX)
+                System.out.println(" [ Al menos 8 carácteres ]");
+            if (lowercaseCounter < MIN_Lowercase)
+                System.out.println(" [ Letras minúsculas ]");
+            if (uppercaseCounter < MIN_Uppercase)
+                System.out.println(" [ Letras mayúsculas ]");
+            if (digitCounter < NUM_Digits)
+                System.out.println(" [ Número mínimo de dígitos numéricos ]");
+
+            return false;
+        }
+    }
+
+    private boolean validEmail(String email) {
+        Pattern pattern = Pattern.compile("^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@" + "[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$");
+        Matcher mather = pattern.matcher(email);
+
+        if (mather.find()) {
+            System.out.println("El email ingresado es válido.");
+            return true;
+        } else {
+            System.out.println("El email ingresado es inválido.");
+            return false;
+        }
+    }
 
 
 }
