@@ -3,6 +3,7 @@ package com.company;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Transaction implements Serializable {
     private int id;
@@ -11,13 +12,15 @@ public class Transaction implements Serializable {
     private Double amount;
     private Wallet sender;
     private Wallet recieber;
+    private ValidationState state;
 
-    public Transaction(Wallet recieber,Wallet sender,List<Usuario>validators,Double amount) {
+    public Transaction(Wallet recieber,Wallet sender,HashMap<Usuario, Boolean>validators,Double amount) {
         this.recieber = recieber;
         this.sender=sender;
         this.recieber=recieber;
         this.amount=amount;
         setValidators(validators);
+        this.state = ValidationState.PENDING;
     }
 
     public int getId() {
@@ -32,9 +35,9 @@ public class Transaction implements Serializable {
         return validators;
     }
 
-    public void setValidators(List<Usuario> validators) {
-        for (Usuario e:validators){
-            this.validators.put(e,false);
+    public void setValidators(HashMap<Usuario, Boolean> validators) {
+        for (Map.Entry<Usuario, Boolean> entrada  : validators.entrySet()){
+            this.validators.put(entrada.getKey(),false);
         }
     }
 
@@ -60,6 +63,14 @@ public class Transaction implements Serializable {
 
     public void setRecieber(Wallet recieber) {
         this.recieber = recieber;
+    }
+
+    public ValidationState getState() {
+        return state;
+    }
+
+    public void setState(ValidationState state) {
+        this.state = state;
     }
 
     @Override
