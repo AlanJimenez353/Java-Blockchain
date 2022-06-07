@@ -7,7 +7,7 @@ public class Main {
     public static void main(String[] args) throws IOException {
 
         Sistema sistem=new Sistema();
-        sistem.segundo();
+        sistem.tercero();
     }
 }
 
