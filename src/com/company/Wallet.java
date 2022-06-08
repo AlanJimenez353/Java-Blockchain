@@ -4,8 +4,8 @@ import java.io.Serializable;
 
 public class Wallet implements Serializable {
 
-    private int utnCoins = 100;
-    private int money = 0;
+    private double utnCoins = 100;
+    private double money = 0;
     private int ownerReference;
 
 
@@ -18,19 +18,19 @@ public class Wallet implements Serializable {
     }
 
     //GETTERS AND SETTERS
-    public int getUtnCoins() {
+    public double getUtnCoins() {
         return utnCoins;
     }
 
-    public void setUtnCoins(int utnCoins) {
+    public void setUtnCoins(double utnCoins) {
         this.utnCoins = utnCoins;
     }
 
-    public int getMoney() {
+    public double getMoney() {
         return money;
     }
 
-    public void setMoney(int money) {
+    public void setMoney(double money) {
         this.money = money;
     }
 

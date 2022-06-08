@@ -174,6 +174,7 @@ public class Sistema {
         }
 
     }
+
     public void mostrarListaUsuarios(){
         for (Usuario e : listaUsers){
             System.out.println(e.toString());
@@ -215,7 +216,6 @@ public class Sistema {
                 = new TypeReference<HashMap<String,Usuario>>() {};
         file.delete();
         crearHashMapArchivo(mapaUsuarios);
-
     }
     public void mostrarHashMapUsuarios(){
         for (HashMap.Entry<String, Usuario> entry : mapaUsuarios.entrySet()) {
@@ -279,22 +279,150 @@ public class Sistema {
         return validators;
     }
 
+//------------------------------------------MENU PRINCIPAL------------------------------------------------------------//
+
+    public void MenuLogin()
+    {
+        Usuario uno=new Usuario("Alan","alan@gmail","passworD1","40000001");
+        Usuario dos=new Usuario("Nico","nico@gmail","passworD2","40000002");
+        Usuario tres=new Usuario("Santi","santi@gmail","passworD3","40000003");
+        Usuario cuatro=new Usuario("Ramiro","rama@gmail","passworD4","40000004");
+        Usuario cinco=new Usuario("Julian","julian@gmail","passworD5","40000005");
+        Usuario seis=new Usuario("Mario","mario@gmail","passworD6","40000006");
+
+        mapaUsuarios.put(uno.getDni(),uno);
+        mapaUsuarios.put(dos.getDni(),dos);
+        mapaUsuarios.put(tres.getDni(),tres);
+        mapaUsuarios.put(cuatro.getDni(),cuatro);
+        mapaUsuarios.put(cinco.getDni(),cinco);
+        mapaUsuarios.put(seis.getDni(),seis);
+
+        opcionesMenuLogin();
+
+        switch (ingresarOpcion())
+        {
+            case 1:
+            {
+                activeUser=login();
+                if(activeUser!=null) {
+                    System.out.println("Login exitoso");
+                }else {
+                    System.out.println("Usuario invalido");
+                }
+                break;
+            }
+            case 2:
+            {
+                Usuario newUser=RegistroUsuario();
+                if(newUser!=null) {
+                    mapaUsuarios.put(newUser.getDni(), newUser);
+                    System.out.println("Registro exitoso.");
+                }
+                else
+                {
+                    System.out.println("Error de registro");
+                }
+                break;
+            }
+            case 0:
+            {
+                System.out.println("Saliendo del sistema...");
+                break;
+            }
+            default:
+            {
+                System.out.println("Opcion incorrecta");
+                break;
+            }
+        }
+    }
 
 //-----------------------------------------Opciones de Login----------------------------------------------------------//
 
-    public void login(){
-        /*
-        pido docu
-        pido psw
-        por teclado
-        valido con el hashmap de usurios que la data sea correta
-        comparo doc con keys del hashmap si es igual a la key tomo el value (hashmap = key-value)
-        si todo es correcto
-        activeUser=e.value
-
-
-        * */
+    public Usuario login() {
+        String dniLogin = ingresarDNI();
+        String passwordLogin = ingresarPassword();
+        Usuario newUser = validUsuario(dniLogin, passwordLogin);
+        if (newUser != null) {return newUser;}else{return null;}
     }
+
+
+    public Usuario RegistroUsuario() {
+        System.out.println("[ Registro de Usuario ]");
+        Usuario newUser=new Usuario(ingresarUserName(), ingresarEmail(), ingresarPassword(), ingresarDNI());
+        if(existUsuario(newUser.getDni())) {return null;}else{return newUser;}
+    }
+
+    private void opcionesMenuLogin() {
+        System.out.println("   [ Blockchain - V1 ]");
+        System.out.println(" 1 - Iniciar seccion.");
+        System.out.println(" 2 - Registrarse.. ");
+        System.out.println(" 0 - Salir");
+    }
+
+    private void opcionesMenuPrincipal(Usuario activeUser) {
+        if(activeUser!=null) {
+            System.out.println("      [ Blockchain - V1 ]");
+            System.out.println(" [ Bienvenido " + activeUser.getNombre() + " ]");
+            System.out.println(" 1 - Deposito");
+            System.out.println(" 2 - Transferencia");
+            System.out.println(" 3 - Exit");
+        }
+    }
+    ///Arreglar esta funcion mas tarde (Funciona igual).
+    private int ingresarOpcion()
+    {
+        int opcion=666;
+        Scanner input=new Scanner(System.in);
+        try
+        {
+            System.out.println(" Ingresar Opcion: ");
+            opcion=input.nextInt();
+            if(opcion<0 || opcion>=3)
+            {
+                opcion=666;
+            }
+        }catch (Exception e)
+        {
+            System.out.println("La opcion cargada genero un error.");
+        }
+        return opcion;
+    }
+    //----------------------------------Validaciones Login y Registrp------------------------------------------------------//
+
+    public Usuario validUsuario(String dni,String password)
+    {
+        Usuario retorno=null;
+
+        for (HashMap.Entry<String, Usuario> entry : mapaUsuarios.entrySet()) {
+            if(entry.getKey().equals(dni)) {
+                if(entry.getValue().getContraseña().equals(password)) {
+                    System.out.println("clave=" + entry.getKey() + ", valor=" + entry.getValue());
+                    retorno=entry.getValue();
+                }
+                else {
+                    System.out.println("La contraseña es incorrecta.");
+                }
+            }
+        }
+        return retorno;
+    }
+
+    public boolean existUsuario(String dni)
+    {
+       boolean retorno=false;
+
+        for (HashMap.Entry<String, Usuario> entry : mapaUsuarios.entrySet()) {
+            if (entry.getKey().equals(dni)) {
+                retorno = true;
+                break;
+            }
+            }
+        return retorno;
+    }
+
+    // --------------------------------------Validacion ingreso por teclado-------------------------------------------------//
+
     public String ingresarDNI() {
         String dni="Error";
         boolean inspector;
@@ -330,58 +458,6 @@ public class Sistema {
         }
         return userName;
     }
-    private boolean validDni(String dni) {
-        int i, j = 0;
-        String numero = ""; // Es el numero que se comprueba uno a uno por si hay alguna letra entre los 8 primeros digitos
-        String[] unoNueve = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
-
-        for (i = 0; i < dni.length() - 1; i++) {
-            numero = dni.substring(i, i + 1);
-
-            for (j = 0; j < unoNueve.length; j++) {
-                if (numero.equals(unoNueve[j])) {
-                    numero += unoNueve[j];
-                }
-            }
-        }
-
-        if (dni.length() != 8) {
-            System.out.println("El DNI ingresado es invalido.");
-            return false;
-        } else {
-            System.out.println("El DNI ingresado es valido.");
-            return true;
-        }
-    }
-    public static boolean validUsername(String name) {
-        String specialChars = "~`!@#$%^&*()-_=+\\|[{]};:'\",<.>/?";
-        boolean specialchar = false;
-        boolean numero = false;
-        if (name.length() > 4 && name.length() < 15) {
-            for (int i = 0; i < name.length(); i++) {
-                if (specialChars.contains(String.valueOf(name.charAt(i)))) {
-                    specialchar = true;
-                } else if (Character.isDigit(Integer.valueOf(name.charAt(i)))) {
-                    numero = true;
-                }
-            }
-
-            if (specialchar && numero) {
-                System.out.println("El nombre " + name + " es invalido");
-                return false;
-            } else {
-                System.out.println("El nombre " + name + " es valido");
-                return true;
-            }
-        } else {
-            System.out.println("El nombre " + name + " no tiene caracteres suficientes.");
-            return false;
-        }
-    }
-
-
-// --------------------------------------Validacion ingreso por teclado-------------------------------------------------//
-
     public String ingresarEmail() {
         String emailNuevo;
         boolean inspector;
@@ -409,6 +485,53 @@ public class Sistema {
 
         return password;
     }
+
+    private boolean validDni(String dni) {
+        int i, j = 0;
+        String numero = ""; // Es el numero que se comprueba uno a uno por si hay alguna letra entre los 8 primeros digitos
+        String[] unoNueve = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
+
+        for (i = 0; i < dni.length() - 1; i++) {
+            numero = dni.substring(i, i + 1);
+
+            for (j = 0; j < unoNueve.length; j++) {
+                if (numero.equals(unoNueve[j])) {
+                    numero += unoNueve[j];
+                }
+            }
+        }
+
+        if (dni.length() != 8) {
+            System.out.println("El DNI ingresado es invalido.");
+            return false;
+        } else {
+            return true;
+        }
+    }
+    public static boolean validUsername(String name) {
+        String specialChars = "~`!@#$%^&*()-_=+\\|[{]};:'\",<.>/?";
+        boolean specialchar = false;
+        boolean numero = false;
+        if (name.length() > 4 && name.length() < 15) {
+            for (int i = 0; i < name.length(); i++) {
+                if (specialChars.contains(String.valueOf(name.charAt(i)))) {
+                    specialchar = true;
+                } else if (Character.isDigit(Integer.valueOf(name.charAt(i)))) {
+                    numero = true;
+                }
+            }
+
+            if (specialchar && numero) {
+                System.out.println("El nombre " + name + " es invalido");
+                return false;
+            } else {
+                return true;
+            }
+        } else {
+            System.out.println("El nombre " + name + " no tiene caracteres suficientes.");
+            return false;
+        }
+    }
     private boolean validPassword(String password) {
         final int MAX = 8;
         final int MIN_Uppercase = 1;
@@ -429,7 +552,6 @@ public class Sistema {
         }
 
         if (password.length() >= MAX && uppercaseCounter >= MIN_Uppercase && lowercaseCounter >= MIN_Lowercase && digitCounter >= NUM_Digits) {
-            System.out.println("Valid Password");
             return true;
         } else {
             System.out.println(" Su contraseña no contiene lo siguiente:");
@@ -450,7 +572,6 @@ public class Sistema {
         Matcher mather = pattern.matcher(email);
 
         if (mather.find()) {
-            System.out.println("El email ingresado es válido.");
             return true;
         } else {
             System.out.println("El email ingresado es inválido.");
@@ -459,21 +580,75 @@ public class Sistema {
         }
     }
 
+//---------------------------------------Metodos Ingreso, Reintegro y Transferencia-------------------------------------//
 
-//----------------------------------------Menu de prueba sin desarrollo-------------------------------------------------//
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ///* Parametro : Recibe la billetera a la que se le carga el ingreso del segundo parametro.                       *///
+    ///* Retorno:  true=Se realizo correctamente el ingreso |  false=el ingreso es 0 o menor.                         *///
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    public boolean ingreso(Wallet receptor,double ingreso) {
+    boolean ingresoCorrecto = true;
+    try {
+        if (ingreso > 0) {
+            ingresoCorrecto = false;
+        } else {
+            receptor.setMoney(receptor.getMoney()+ingreso);
+        }
+    }catch (ArithmeticException arithmeticException)
+    {
+        System.out.println("Error aritmetico en el ingreso de utnCoin$");
+    }
+    return ingresoCorrecto;
+}
 
-    private void MenuLogin() {
-        System.out.println("   [ Blockchain - V1 ]");
-        System.out.println(" 1 - Iniciar seccion.");
-        System.out.println(" 2 - Registrarse.. ");
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ///* Parametro : Recibe una billetera a la que se le descontara el dinero del segundo parametro                   *///
+    ///* Retorno:  true=Se realizo correctamente la transferencia | false= el usuario no tiene el dinero necesario.   *///
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    public boolean reintegro(Wallet emisor,double dinero) {
+        boolean reintegroCorrecto = true;
+        try {
+            if (dinero < 0) {
+                reintegroCorrecto = false;
+            } else if (emisor.getMoney()>dinero) {
+                emisor.setMoney(emisor.getMoney()-dinero);
+            } else {
+                reintegroCorrecto = false;
+            }
+        }catch(ArithmeticException arithmeticException)
+        {
+            System.out.println("Error aritmetico en el ingreso de utnCoin$");
+        }
+        return reintegroCorrecto;
     }
 
-    private void MenuPrincipal(String nombreUser) {
-        System.out.println("      [ Blockchain - V1 ]");
-        System.out.println(" [ Bienvenido "+nombreUser+" ]");
-        System.out.println(" 1 - Deposito");
-        System.out.println(" 2 - Transferencia");
-        System.out.println(" 3 - Exit");
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ///* Parametro : Recibe dos billeteras para realizar la transferencia, emisor transfiere dinero a receptor solamente si dinero es mayor a 0.  *///
+    ///* Retorno:  true=Se realizo correctamente el reintegro | false= el usuario no tiene el dinero necesario.                                   *///
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    public boolean transferencia(Wallet emisor, Wallet receptor, double dinero) {
+        boolean correcto = true;
+        try{
+            if (dinero < 0) {
+                correcto = false;
+            } else if (emisor.getMoney()>=dinero) {
+
+                reintegro(emisor,dinero);
+                ingreso(receptor,dinero);
+            } else {
+                correcto = false;
+            }
+        }catch (ArithmeticException arithmeticException)
+        {
+            System.out.println("Error aritmetico en el ingreso de utnCoin$");
+        }
+        return correcto;
     }
+
+
+//------------------------------------------------------------------------------------------------------------------------//
 
 }
