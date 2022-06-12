@@ -79,12 +79,13 @@ public class Sistema {
         crearHashMapArchivo(mapaUsuarios);
         this.activeUser=uno;
         setDocumentKeys();
-        generateNewTransaction(tres,25);
-        generateNewTransaction(dos,100);
+        generateNewTransaction(uno,25);
+        generateNewTransaction(uno,100);
 
         loadTransactionsToValidateFile();
-        showTransactionsToValidate();
-        validateTransactions();
+        //showTransactionsToValidate();
+        //validateTransactions();
+        validateAllTransactions();
     }
 
 //-----------------------------------------------ACTIVE USER ACTIONS----------------------------------------------------
@@ -109,26 +110,42 @@ public class Sistema {
     }
     //Agregar 50 UTN Coins por cada transaccion confirmada
     public void validateTransactions() throws IOException {
-        int numberOftransactionsToValidate=0;
+        int numberOftransactionsValidated=0;
+        HashMap<Integer,Transaction>transactionsAUX=this.transactionToValidateMap;
+
+
         for (Map.Entry<Integer, Transaction> entry : transactionToValidateMap.entrySet()) {
             for (Map.Entry<String,Boolean> transactionEntry : entry.getValue().getValidators().entrySet()) {
                 if(transactionEntry.getKey().matches((activeUser.getDni())))
                 {
                     if(transactionEntry.getValue()==false) {
-                        this.transactionToValidateMap.get(entry.getKey()).updateValidation(activeUser.getDni());
-                        numberOftransactionsToValidate = numberOftransactionsToValidate + 1;
+                        transactionsAUX.get(entry.getKey()).updateValidation(activeUser.getDni());
+                        numberOftransactionsValidated = numberOftransactionsValidated + 1;
                     }
                 }
             }
         }
-        if (numberOftransactionsToValidate==0){
+        if (numberOftransactionsValidated==0){
             System.out.println("Usted no tiene transacciones por validar");
-        }else{
-            System.out.println("Usted Valido : "+numberOftransactionsToValidate+" transacciones");
         }
-
-        createTransactionsToValidateFile(this.transactionToValidateMap);
+        else{
+            System.out.println("Usted Valido : "+numberOftransactionsValidated+" transacciones");
+            System.out.println("Se añadieron: "+(50*numberOftransactionsValidated)+" UTN Coins a su billetera");
+        }
+        activeUser.getWallet().setUtnCoins(activeUser.getWallet().getUtnCoins()+(50*numberOftransactionsValidated));
+        createTransactionsToValidateFile(transactionsAUX);
     }
+
+    public void validateAllTransactions() throws IOException {
+
+        HashMap<Integer,Transaction>transactionsAUX=this.transactionToValidateMap;
+        for (Map.Entry<Integer, Transaction> entry : transactionToValidateMap.entrySet()) {
+                transactionToValidateMap.get(entry.getKey()).updateAllValidatorsToTrue();
+        }
+        createTransactionsToValidateFile(this.transactionToValidateMap);
+
+    }
+
 
 //-----------------------------------------------GETTERS AND SETTERS----------------------------------------------------
 
@@ -299,6 +316,10 @@ public class Sistema {
 
         this.transactionToValidateMap= mapper.readValue(file, typeRef);
     }
+
+    //TODO
+
+
 
 ///----------------------------------------------TRANSACTIONS-----------------------------------------------------------
 

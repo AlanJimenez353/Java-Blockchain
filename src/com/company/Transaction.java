@@ -59,11 +59,21 @@ public class Transaction implements Serializable {
         this.recieber = recieber;
     }
 
-//METHODS
+    public void setValidators(HashMap<String, Boolean> validators) {
+        this.validators = validators;
+    }
+    //METHODS
 
     public void updateValidation(String dni){
         validators.remove(dni);
         validators.put(dni,true);
+    }
+    public void updateAllValidatorsToTrue(){
+        HashMap<String,Boolean>aux=new HashMap<>();
+        for (String doc:validators.keySet()) {
+            aux.put(doc,true);
+        }
+    this.validators=aux;
     }
 
     @Override
