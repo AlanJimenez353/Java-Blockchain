@@ -34,6 +34,14 @@ public class Wallet implements Serializable {
         this.money = money;
     }
 
+    public int getOwnerReference() {
+        return ownerReference;
+    }
+
+    public void setOwnerReference(int ownerReference) {
+        this.ownerReference = ownerReference;
+    }
+
     @Override
     public String toString() {
         return "Wallet{" +

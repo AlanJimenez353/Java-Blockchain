@@ -1,40 +1,44 @@
 package com.company;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Random;
+import java.util.Map;
 
 public class Transaction implements Serializable {
+    private static int identificador;
     private int id;
-
-    private HashMap<Usuario, Boolean> validators;
+    private HashMap<String, Boolean> validators=new HashMap<>();
     private int amount;
     private Wallet sender;
     private Wallet recieber;
 
-    public Transaction(Wallet recieber,Wallet sender,List<Usuario>validators,int amount) {
+    public Transaction(Wallet recieber, Wallet sender, HashMap<String,Boolean> validators, int amount) {
         this.recieber = recieber;
         this.sender=sender;
         this.recieber=recieber;
         this.amount=amount;
-        setValidators(validators);
+        setIdentificador();
+        setId();
+        this.validators=validators;
     }
 
+    public Transaction(){
+
+    }
     //GETTERS AND SETTERS
     public int getId() {
-        return id;
+        return this.id;
     }
-    public void setId(int id) {
-        this.id = id;
+    public void setId() {
+        this.id =identificador;
     }
-    public HashMap<Usuario, Boolean> getValidators() {
+    public void setIdentificador(){
+        identificador=identificador+1;
+    }
+    public HashMap<String, Boolean> getValidators() {
         return validators;
-    }
-    public void setValidators(List<Usuario> validators) {
-        for (Usuario e:validators){
-            this.validators.put(e,false);
-        }
     }
     public int getAmount() {
         return amount;
@@ -55,7 +59,7 @@ public class Transaction implements Serializable {
         this.recieber = recieber;
     }
 
-    //METHODS
+//METHODS
 
     @Override
     public String toString() {
@@ -63,8 +67,8 @@ public class Transaction implements Serializable {
                 "id=" + id +
                 ", validators=" + validators +
                 ", amount=" + amount +
-                ", sender=" + sender +
-                ", recieber=" + recieber +
+                ", sender=" + sender.toString() +
+                ", recieber=" + recieber.toString() +
                 '}';
     }
 }

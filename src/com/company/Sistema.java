@@ -7,6 +7,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationConfig;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class Sistema {
@@ -14,13 +16,17 @@ public class Sistema {
     private List<Usuario>listaUsers=new ArrayList<>();
     private HashMap<String,Usuario>mapaUsuarios=new HashMap<>();
     private Usuario activeUser;
-    private List<String>documentKeys;
+    private List<String>documentKeys=new ArrayList<>();
+    private HashMap<Integer, Transaction>transactionToValidateMap=new HashMap<>();
+
+
+
 //-------------------------------------------Constructor ---------------------------------------------------------------
     public Sistema() throws IOException {
 
         setPaths();
         //this.listaUsers=cargarUsuariosDeArchivo();
-        this.mapaUsuarios=cargarMapaUsuariosDeArchivo();
+
         //login();
     }
 //-----------------------------------------MANEJO ARCHIVOS--------------------------------------------------------------
@@ -67,19 +73,48 @@ public class Sistema {
         Usuario cinco=new Usuario("sasd","dfg@gmail","password5","546645645");
         Usuario seis=new Usuario("asease","dfgdf@gmail","password6","345345345");
 
-        mapaUsuarios.put(cuatro.getDni(),uno);
+        mapaUsuarios.put(cuatro.getDni(),cuatro);
         mapaUsuarios.put(dos.getDni(),dos);
         mapaUsuarios.put(tres.getDni(),tres);
         mapaUsuarios.put(uno.getDni(),uno);
-        mapaUsuarios.put(cinco.getDni(),dos);
-        mapaUsuarios.put(seis.getDni(),tres);
+        mapaUsuarios.put(cinco.getDni(),cinco);
+        mapaUsuarios.put(seis.getDni(),seis);
         crearHashMapArchivo(mapaUsuarios);
         this.activeUser=uno;
         setDocumentKeys();
-        System.out.println(documentKeys);
         generateNewTransaction(tres,25);
+        generateNewTransaction(dos,100);
+
+        loadTransactionsToValidateFile();
+        validateTransactions();
+    }
+
+//-----------------------------------------------ACTIVE USER ACTIONS----------------------------------------------------
+
+    public void validateTransactions(){
+        boolean comp=false;
+        int transactionsToValidate=0;
+        for (Map.Entry<Integer, Transaction> entry : transactionToValidateMap.entrySet()) {
+            for (Map.Entry<String,Boolean> transactionEntry : entry.getValue().getValidators().entrySet()) {
+                if(transactionEntry.getKey().matches((activeUser.getDni())))
+                {
+                    transactionsToValidate=transactionsToValidate+1;
+                }
+            }
+        }
+        if (transactionsToValidate==0){
+            System.out.println("Usted no tiene transacciones por validar");
+        }else{
+            System.out.println("Usted tiene : "+transactionsToValidate+" transacciones para validar");
+        }
 
     }
+
+
+
+
+
+
 
 
 //-----------------------------------------------GETTERS AND SETTERS----------------------------------------------------
@@ -112,11 +147,8 @@ public class Sistema {
         return documentKeys;
     }
     public void setDocumentKeys() {
-        Iterator iter=this.mapaUsuarios.entrySet().iterator();
-        while (iter.hasNext()){
-            Map.Entry e=(Map.Entry)iter.next();
-            System.out.println(e.getKey());
-            documentKeys.add((String) e.getKey());
+        for (HashMap.Entry<String, Usuario> entry : mapaUsuarios.entrySet()) {
+            documentKeys.add(entry.getValue().getDni());
         }
     }
 //--------------------------------------------MANEJO ARCHIVO USUARIOS---------------------------------------------------
@@ -226,10 +258,33 @@ public class Sistema {
 
 //-----------------------------------------MANEJO ARCHIVO Transacciones-------------------------------------------------
 
-    public void addTransactionToArchive(Transaction transaction) throws IOException {
-        File newTransaction=new File(TRANSACTIONS_TO_VALIDATE_PATH+"\\"+transaction.getId()+".json");
+    public void createTransactionsToValidateFile(HashMap<Integer, Transaction> mapT) throws IOException {
+        File transactionsToValidatePath=new File(TRANSACTIONS_TO_VALIDATE_PATH+"\\HashMapTransactionsToValidate.json");
         ObjectMapper mapper=new ObjectMapper();
-        mapper.writeValue(newTransaction, transaction);
+        mapper.writeValue(transactionsToValidatePath,mapT);
+    }
+    public void addTransactionToValidate(Transaction toAdd) throws IOException {
+        ObjectMapper mapper=new ObjectMapper();
+        File transactionsToValidatePath=new File(TRANSACTIONS_TO_VALIDATE_PATH+"\\HashMapTransactionsToValidate.json");
+        TypeReference<HashMap<Integer,Transaction>> typeRef
+                = new TypeReference<HashMap<Integer,Transaction>>() {};
+        transactionsToValidatePath.delete();
+        this.transactionToValidateMap.put(toAdd.getId(),toAdd);
+        createTransactionsToValidateFile(transactionToValidateMap);
+    }
+    public void loadTransactionsToValidateFile() throws IOException {
+
+        ObjectMapper mapper=new ObjectMapper();
+        mapper.enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
+        mapper.enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+        mapper.enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
+        mapper.enable(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES);
+
+        File file=new File(TRANSACTIONS_TO_VALIDATE_PATH+"\\HashMapTransactionsToValidate.json");
+        TypeReference<HashMap<Integer,Transaction>> typeRef
+                = new TypeReference<HashMap<Integer,Transaction>>() {};
+
+        this.transactionToValidateMap= mapper.readValue(file, typeRef);
     }
 
 
@@ -237,10 +292,10 @@ public class Sistema {
 
     private void generateNewTransaction(Usuario recieber,int amount) throws IOException {
         Transaction newTransaction=new Transaction(recieber.getWallet(),activeUser.getWallet(),generateTransactionValidators(),amount);
-        addTransactionToArchive(newTransaction);
+        addTransactionToValidate(newTransaction);
 
     }
-    private List generateTransactionValidators(){
+    private HashMap<String,Boolean> generateTransactionValidators(){
         //ACA TAMBIEN TENEMOS QUE RECIBIR EL USUARIO QUE CREA LA TRANSACCION Y EL USUARIO QUE LA RECIBE Y COMPROBAR QUE NO SEAN UNO DE LOS VALIDADORES
 
         ArrayList<Integer> numbers = new ArrayList<>();
@@ -248,34 +303,35 @@ public class Sistema {
         int i=0;
 
         /*
-        Generamos 3 numeros random y los agregamos a la lista,se comprobamos que no se no se agreguen repetidos
+        Generamos 3 numeros random y los agregamos a la lista,se comprobamos que
+        No se no se agreguen repetidos
+        El usuario activo no sea 1 de los validadores
+
         */
         while  (i<validatorsQuantity){
             boolean comp=false;
             Random numAleatorio=new Random();
-            System.out.println(mapaUsuarios.size());
-            int randomNumber= numAleatorio.nextInt(mapaUsuarios.size())+1;
-            System.out.println(randomNumber);
-
+            int randomNumber= numAleatorio.nextInt(documentKeys.size());
             for(int e:numbers){
                 if(randomNumber==e){
+                    comp=true;
+                }else if(randomNumber==activeUser.getId()){
+
                     comp=true;
                 }
             }
             if(comp==false){
                 numbers.add(randomNumber);
-                System.out.println("asd");
                 i++;
             }
         }
         /*
          Cremos lista de usuarios y le pasamos a la transaccion que recibimos por parametro la lista con los usuarios seleccionados de forma random
         * */
-        List<Usuario>validators=new ArrayList<>();
+        HashMap<String,Boolean>validators=new HashMap<>();
         for (Integer f:numbers){
-            validators.add(mapaUsuarios.get(documentKeys.get(f)));
+            validators.put(mapaUsuarios.get(documentKeys.get(f)).getDni(),false);
         }
-        System.out.println(validators);
         return validators;
     }
 

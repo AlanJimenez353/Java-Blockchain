@@ -1,6 +1,8 @@
 package com.company;
 
-public enum ValidationState {
+import java.io.Serializable;
+
+public enum ValidationState implements Serializable{
 
     PENDING,
     ACCEPTED,

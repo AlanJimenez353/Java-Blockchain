@@ -66,11 +66,9 @@ public class Usuario implements Serializable {
     public void setDni(String dni) {
         this.dni = dni;
     }
-
     public Wallet getWallet() {
         return wallet;
     }
-
     public void setWallet() {
         Wallet wallet=new Wallet(generateUserReference());
         this.wallet = wallet;
@@ -80,7 +78,7 @@ public class Usuario implements Serializable {
     private int generateUserReference(){
         Random numAleatorio=new Random();
         int n= numAleatorio.nextInt(5000-2000+1)+2000;
-        System.out.println("USER REFERENCE : "+n);
+        //System.out.println("USER REFERENCE : "+n);
         return n;
     }
 
