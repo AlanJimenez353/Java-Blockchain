@@ -22,19 +22,16 @@ public class Sistema {
 
 
 //-------------------------------------------Constructor ---------------------------------------------------------------
+
     public Sistema() throws IOException {
-
         setPaths();
-        //this.listaUsers=cargarUsuariosDeArchivo();
-
-        //login();
     }
+
 //-----------------------------------------MANEJO ARCHIVOS--------------------------------------------------------------
 
     private String USER_PATH;
     private String USUARIOS_PATH;
     private String TRANSACTIONS_TO_VALIDATE_PATH;
-
     //SISTEMA DEBERIA RECIBIR LA DATA DEL INGRESO POR TECLADO DEL USUARIO Y LUEGO HACER LAS VALIDACIONES. LUEGO SI PASA LAS VALIDACIONES SETEAR EL ACTIVE USER CON UN SetActiveUser
 
     //PRUEBAS
@@ -86,12 +83,13 @@ public class Sistema {
         generateNewTransaction(dos,100);
 
         loadTransactionsToValidateFile();
+        showTransactionsToValidate();
         validateTransactions();
     }
 
 //-----------------------------------------------ACTIVE USER ACTIONS----------------------------------------------------
 
-    public void validateTransactions(){
+    public void showTransactionsToValidate(){
         boolean comp=false;
         int transactionsToValidate=0;
         for (Map.Entry<Integer, Transaction> entry : transactionToValidateMap.entrySet()) {
@@ -99,6 +97,7 @@ public class Sistema {
                 if(transactionEntry.getKey().matches((activeUser.getDni())))
                 {
                     transactionsToValidate=transactionsToValidate+1;
+                    System.out.println(entry.getValue().toString());
                 }
             }
         }
@@ -107,7 +106,28 @@ public class Sistema {
         }else{
             System.out.println("Usted tiene : "+transactionsToValidate+" transacciones para validar");
         }
+    }
+    //Agregar 50 UTN Coins por cada transaccion confirmada
+    public void validateTransactions() throws IOException {
+        int numberOftransactionsToValidate=0;
+        for (Map.Entry<Integer, Transaction> entry : transactionToValidateMap.entrySet()) {
+            for (Map.Entry<String,Boolean> transactionEntry : entry.getValue().getValidators().entrySet()) {
+                if(transactionEntry.getKey().matches((activeUser.getDni())))
+                {
+                    if(transactionEntry.getValue()==false) {
+                        this.transactionToValidateMap.get(entry.getKey()).updateValidation(activeUser.getDni());
+                        numberOftransactionsToValidate = numberOftransactionsToValidate + 1;
+                    }
+                }
+            }
+        }
+        if (numberOftransactionsToValidate==0){
+            System.out.println("Usted no tiene transacciones por validar");
+        }else{
+            System.out.println("Usted Valido : "+numberOftransactionsToValidate+" transacciones");
+        }
 
+        createTransactionsToValidateFile(this.transactionToValidateMap);
     }
 
 //-----------------------------------------------GETTERS AND SETTERS----------------------------------------------------
@@ -253,6 +273,7 @@ public class Sistema {
     public void createTransactionsToValidateFile(HashMap<Integer, Transaction> mapT) throws IOException {
         File transactionsToValidatePath=new File(TRANSACTIONS_TO_VALIDATE_PATH+"\\HashMapTransactionsToValidate.json");
         ObjectMapper mapper=new ObjectMapper();
+        transactionsToValidatePath.delete();
         mapper.writeValue(transactionsToValidatePath,mapT);
     }
     public void addTransactionToValidate(Transaction toAdd) throws IOException {

@@ -61,6 +61,11 @@ public class Transaction implements Serializable {
 
 //METHODS
 
+    public void updateValidation(String dni){
+        validators.remove(dni);
+        validators.put(dni,true);
+    }
+
     @Override
     public String toString() {
         return "Transaction{" +
