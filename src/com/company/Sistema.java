@@ -2,6 +2,7 @@ package com.company;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -18,22 +19,19 @@ public class Sistema {
     private Usuario activeUser;
     private List<String>documentKeys=new ArrayList<>();
     private HashMap<Integer, Transaction>transactionToValidateMap=new HashMap<>();
-
-
+    private HashMap<Integer,Transaction>blockchain=new HashMap<>();
 
 //-------------------------------------------Constructor ---------------------------------------------------------------
-
     public Sistema() throws IOException {
         setPaths();
     }
 
 //-----------------------------------------MANEJO ARCHIVOS--------------------------------------------------------------
-
     private String USER_PATH;
     private String USUARIOS_PATH;
     private String TRANSACTIONS_TO_VALIDATE_PATH;
+    private String BLOCKCHAIN_PATH;
     //SISTEMA DEBERIA RECIBIR LA DATA DEL INGRESO POR TECLADO DEL USUARIO Y LUEGO HACER LAS VALIDACIONES. LUEGO SI PASA LAS VALIDACIONES SETEAR EL ACTIVE USER CON UN SetActiveUser
-
     //PRUEBAS
     public void primero() throws IOException {
         Usuario uno=new Usuario("Alan","alan@gmail","password","41079103");
@@ -86,10 +84,48 @@ public class Sistema {
         //showTransactionsToValidate();
         //validateTransactions();
         validateAllTransactions();
+        addConfirmedTransactionsToBlockchain();
     }
+//-----------------------------------------------BLOCKCHAIN ----------------------------------------------------
+    public void addConfirmedTransactionsToBlockchain() throws IOException {
+            HashMap<Integer,Transaction>transactionsAUX=this.transactionToValidateMap;
+            HashMap<Integer,Transaction>transactionsToDelete=this.transactionToValidateMap;
+            ArrayList<Integer>integers=new ArrayList<>();
+
+
+        for (Map.Entry<Integer, Transaction> entry : transactionsAUX.entrySet()) {
+                boolean comp=false;
+                for(Map.Entry<String,Boolean>validatorsEntry:entry.getValue().getValidators().entrySet()){
+                    if(validatorsEntry.getValue()==false){
+                        comp=true;
+                    }
+                }
+                if(comp==false){
+                    transactionsAUX.get(entry.getKey()).getValidators().remove(entry.getKey());
+                    blockchain.put(entry.getKey(),entry.getValue());
+                    integers.add(entry.getKey());
+                }
+            }
+        deleteTransactions(integers);
+        updateBlockchain();
+    }
+public void deleteTransactions(ArrayList<Integer>integers) throws IOException {
+
+    for (Integer e:integers) {
+        this.transactionToValidateMap.remove(e);
+    }
+    createTransactionsToValidateFile(this.transactionToValidateMap);
+
+}
+public void updateBlockchain() throws IOException {
+    File blockchainPath=new File(BLOCKCHAIN_PATH+"\\Blockchain.json");
+    ObjectMapper mapper=new ObjectMapper();
+    blockchainPath.delete();
+    mapper.writeValue(blockchainPath,blockchain);
+}
+
 
 //-----------------------------------------------ACTIVE USER ACTIONS----------------------------------------------------
-
     public void showTransactionsToValidate(){
         boolean comp=false;
         int transactionsToValidate=0;
@@ -136,19 +172,15 @@ public class Sistema {
         createTransactionsToValidateFile(transactionsAUX);
     }
 
+//--------------------------------------------------ADMIN ACTIONS-------------------------------------------------------
     public void validateAllTransactions() throws IOException {
-
-        HashMap<Integer,Transaction>transactionsAUX=this.transactionToValidateMap;
-        for (Map.Entry<Integer, Transaction> entry : transactionToValidateMap.entrySet()) {
-                transactionToValidateMap.get(entry.getKey()).updateAllValidatorsToTrue();
-        }
-        createTransactionsToValidateFile(this.transactionToValidateMap);
-
+    for (Map.Entry<Integer, Transaction> entry : transactionToValidateMap.entrySet()) {
+        transactionToValidateMap.get(entry.getKey()).updateAllValidatorsToTrue();
     }
-
+    createTransactionsToValidateFile(this.transactionToValidateMap);
+}
 
 //-----------------------------------------------GETTERS AND SETTERS----------------------------------------------------
-
     /*
    Setea los paths de las carpetas donde se guardara el archivo de Usuarios
    */
@@ -156,6 +188,7 @@ public class Sistema {
         this.USER_PATH=System.getProperty("user.dir");
         this.USUARIOS_PATH=""+USER_PATH+"\\users";
         this.TRANSACTIONS_TO_VALIDATE_PATH=""+USER_PATH+"\\transactionsToValidate";
+        this.BLOCKCHAIN_PATH=""+USER_PATH+"\\Blockchain";
     }
     public Usuario getActiveUser() {
 
@@ -183,7 +216,6 @@ public class Sistema {
     }
 
 //--------------------------------------------MANEJO ARCHIVO USUARIOS---------------------------------------------------
-
     //Agregar Validaciones
     public ArrayList<Usuario> cargarUsuariosDeArchivo(){
         ObjectMapper mapper=new ObjectMapper();
@@ -245,7 +277,6 @@ public class Sistema {
     }
 
 //-------------------------------------------MANEJO HASHMAP USUARIOS----------------------------------------------------
-
     public void crearHashMapArchivo(HashMap<String,Usuario>map) throws IOException {
         File mapPath=new File(USUARIOS_PATH+"\\HashMapUsuarios"+".json");
         ObjectMapper mapper=new ObjectMapper();
@@ -286,7 +317,6 @@ public class Sistema {
     }
 
 //-----------------------------------------MANEJO ARCHIVO Transacciones-------------------------------------------------
-
     public void createTransactionsToValidateFile(HashMap<Integer, Transaction> mapT) throws IOException {
         File transactionsToValidatePath=new File(TRANSACTIONS_TO_VALIDATE_PATH+"\\HashMapTransactionsToValidate.json");
         ObjectMapper mapper=new ObjectMapper();
@@ -316,13 +346,11 @@ public class Sistema {
 
         this.transactionToValidateMap= mapper.readValue(file, typeRef);
     }
-
     //TODO
 
 
 
 ///----------------------------------------------TRANSACTIONS-----------------------------------------------------------
-
     private void generateNewTransaction(Usuario recieber,int amount) throws IOException {
         Transaction newTransaction=new Transaction(recieber.getWallet(),activeUser.getWallet(),generateTransactionValidators(),amount);
         addTransactionToValidate(newTransaction);
@@ -369,7 +397,6 @@ public class Sistema {
     }
 
 //------------------------------------------MENU PRINCIPAL------------------------------------------------------------//
-
     public void MenuLogin()
     {
         Usuario uno=new Usuario("Alan","alan@gmail","passworD1","40000001");
@@ -427,7 +454,6 @@ public class Sistema {
     }
 
 //-----------------------------------------Opciones de Login----------------------------------------------------------//
-
     public Usuario login() {
         String dniLogin = ingresarDNI();
         String passwordLogin = ingresarPassword();
@@ -474,7 +500,6 @@ public class Sistema {
         return opcion;
     }
     //----------------------------------Validaciones Login y Registrp------------------------------------------------------//
-
     public Usuario validUsuario(String dni,String password)
     {
         Usuario retorno=null;
@@ -492,7 +517,6 @@ public class Sistema {
         }
         return retorno;
     }
-
     public boolean existUsuario(String dni)
     {
        boolean retorno=false;
@@ -506,8 +530,7 @@ public class Sistema {
         return retorno;
     }
 
-    // --------------------------------------Validacion ingreso por teclado-------------------------------------------------//
-
+// --------------------------------------Validacion ingreso por teclado-------------------------------------------------//
     public String ingresarDNI() {
         String dni="Error";
         boolean inspector;
@@ -665,7 +688,6 @@ public class Sistema {
     }
 
 //---------------------------------------Metodos Ingreso, Reintegro y Transferencia-------------------------------------//
-
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     ///* Parametro : Recibe la billetera a la que se le carga el ingreso del segundo parametro.                       *///
     ///* Retorno:  true=Se realizo correctamente el ingreso |  false=el ingreso es 0 o menor.                         *///
@@ -726,6 +748,7 @@ public class Sistema {
         }
         return correcto;
     }
+
 //------------------------------------------------------------------------------------------------------------------------//
 
 }
