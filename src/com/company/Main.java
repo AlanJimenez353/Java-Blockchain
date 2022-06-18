@@ -13,7 +13,7 @@ public class Main {
 
         while (option != 0){
 
-            System.out.println("MENU \n  1- Realizar Transaccion \n  2- Validar Transacciones \n  3- Mi perfil\n  4- Validar todas las Transacciones");
+            System.out.println("MENU \n  1- Realizar Transaccion \n  2- Validar Transacciones \n  3- Mi perfil\n  4- Validar todas las Transacciones \n  5- Historial de transacciones");
             option=scan.nextInt();
             switch (option){
                 case 1:
@@ -25,16 +25,14 @@ public class Main {
                 case 3:
                     sistem.userOperationsShowProfile();
                     break;
-                case 4: sistem.validateAllTransactions();
+                case 4:
+                    sistem.validateAllTransactions();
+                    break;
+                case 5:
+                    sistem.userOperationsShowTransactionHistory();
 
             }
         }
     }
 }
 
-
-/*
-Un menor de edad no puede crear una cuenta.
-No se puede buscar por nombre ya que pueden existir varios Usuarios con el mismo nombre.
-Cada Usuario tiene un ID , puede ser autoincremental.
- */

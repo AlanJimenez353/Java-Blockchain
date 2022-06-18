@@ -2,6 +2,7 @@ package com.company;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.Inet4Address;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -34,62 +35,6 @@ public class Sistema {
     private String TRANSACTIONS_TO_VALIDATE_PATH;
     private String BLOCKCHAIN_PATH;
     //SISTEMA DEBERIA RECIBIR LA DATA DEL INGRESO POR TECLADO DEL USUARIO Y LUEGO HACER LAS VALIDACIONES. LUEGO SI PASA LAS VALIDACIONES SETEAR EL ACTIVE USER CON UN SetActiveUser
-    //PRUEBAS
-    public void primero() throws IOException {
-        Usuario uno=new Usuario("Alan","alan@gmail","password","41079103");
-        Usuario dos=new Usuario("Nico","nico@gmail","password2","31079103");
-        Usuario tres=new Usuario("Santi","santi@gmail","password3","41459103");
-
-        AgregarUsuarioAarchivo(uno);
-        AgregarUsuarioAarchivo(dos);
-        AgregarUsuarioAarchivo(tres);
-        EliminarUsuarioArchivo(tres);
-
-
-    }
-    public void segundo() throws IOException {
-        Usuario uno=new Usuario("Alan","alan@gmail","password","41079103");
-        Usuario dos=new Usuario("Nico","nico@gmail","password2","31079103");
-        Usuario tres=new Usuario("Santi","santi@gmail","password3","41459103");
-
-        mapaUsuarios.put(uno.getDni(),uno);
-        mapaUsuarios.put(dos.getDni(),dos);
-        mapaUsuarios.put(tres.getDni(),tres);
-        crearHashMapArchivo(mapaUsuarios);
-        //deleteUserFromHashMap(uno);
-        //this.mapaUsuarios=cargarMapaUsuariosDeArchivo();
-        System.out.println(mapaUsuarios);
-
-
-    }
-    public void tercero() throws IOException {
-        Usuario uno=new Usuario("Alan","alan@gmail","password","41079103");
-        Usuario dos=new Usuario("Nico","nico@gmail","password2","31079103");
-        Usuario tres=new Usuario("Santi","fgdf@gmail","password3","41459103");
-        Usuario cuatro=new Usuario("fef","dfg@gmail","password4","1231231234");
-        Usuario cinco=new Usuario("sasd","dfg@gmail","password5","546645645");
-        Usuario seis=new Usuario("asease","dfgdf@gmail","password6","345345345");
-
-        mapaUsuarios.put(cuatro.getDni(),cuatro);
-        mapaUsuarios.put(dos.getDni(),dos);
-        mapaUsuarios.put(tres.getDni(),tres);
-        mapaUsuarios.put(uno.getDni(),uno);
-        mapaUsuarios.put(cinco.getDni(),cinco);
-        mapaUsuarios.put(seis.getDni(),seis);
-        crearHashMapArchivo(mapaUsuarios);
-        this.activeUser=uno;
-        setDocumentKeys();
-        generateNewTransaction(uno,25);
-        generateNewTransaction(uno,100);
-
-
-        //showTransactionsToValidate();
-        //validateTransactions();
-        //validateAllTransactions();
-        //addConfirmedTransactionsToBlockchain();
-        generateNewTransaction(uno,25);
-
-    }
 
     public void createSampleData() throws IOException {
         System.out.println("Creamos 6 usuarios y los cargamos al Archivo de usuarios ");
@@ -177,6 +122,51 @@ public class Sistema {
         }
         System.out.println("\n \n \n \n \n \n \n \n \n \n \n \n  \n \n \n \n \n \n \n \n");
     }
+    public void userOperationsShowTransactionHistory(){
+        ArrayList<Transaction>transactionsNotValidated=new ArrayList<>();
+        ArrayList<Transaction>transactionsSuccess=new ArrayList<>();
+        boolean successempty=true;
+        boolean tovalidateEmpty=true;
+
+        for (Map.Entry<Integer,Transaction>entry:blockchain.entrySet()) {
+            Usuario sender= getUserByOwnerReference(entry.getValue().getSender().getOwnerReference());
+            System.out.println(sender);
+            if(sender.getDni().equals(activeUser.getDni())){
+                transactionsSuccess.add(entry.getValue());
+                successempty=false;
+
+            }
+        }
+        for (Map.Entry<Integer,Transaction>entry:transactionToValidateMap.entrySet()) {
+            Usuario sender= getUserByOwnerReference(entry.getValue().getSender().getOwnerReference());
+            System.out.println(entry.getValue().getSender().getOwnerReference());
+            System.out.println(sender);
+            if(sender.getDni().equals(activeUser.getDni())){
+                transactionsNotValidated.add(entry.getValue());
+                tovalidateEmpty=false;
+            }
+        }
+
+        System.out.println("------------------ Historial de Transacciones ----------------------\n \n");
+        if(successempty ==true) {
+            System.out.println("Transacciones esperando a ser validadas: \n" + transactionsNotValidated.toString()+" \n");
+        }else{
+            System.out.println("No tiene transacciones esperando a ser validadas \n");
+        }
+        System.out.println("\n \n");
+
+        if(tovalidateEmpty ==true){
+            System.out.println("Transacciones validadas y subidas a la blockchain: \n"+transactionsSuccess.toString()+" \n");
+        }else{
+            System.out.println("No tiene transacciones registradas en la blockchain \n");
+        }
+
+
+
+
+
+
+    }
 //---------------------------------------------------MUESTRAS-----------------------------------------------------------
 
     public void Muestra1() throws IOException {
@@ -217,6 +207,61 @@ public class Sistema {
         validateAllTransactions();
         addConfirmedTransactionsToBlockchain();
         System.out.println("Como puede ver las transacciones ya se añadieron a la blockchain y se eliminaron del archivo de transacciones por confirmar");
+
+    }
+    public void primero() throws IOException {
+        Usuario uno=new Usuario("Alan","alan@gmail","password","41079103");
+        Usuario dos=new Usuario("Nico","nico@gmail","password2","31079103");
+        Usuario tres=new Usuario("Santi","santi@gmail","password3","41459103");
+
+        AgregarUsuarioAarchivo(uno);
+        AgregarUsuarioAarchivo(dos);
+        AgregarUsuarioAarchivo(tres);
+        EliminarUsuarioArchivo(tres);
+
+
+    }
+    public void segundo() throws IOException {
+        Usuario uno=new Usuario("Alan","alan@gmail","password","41079103");
+        Usuario dos=new Usuario("Nico","nico@gmail","password2","31079103");
+        Usuario tres=new Usuario("Santi","santi@gmail","password3","41459103");
+
+        mapaUsuarios.put(uno.getDni(),uno);
+        mapaUsuarios.put(dos.getDni(),dos);
+        mapaUsuarios.put(tres.getDni(),tres);
+        crearHashMapArchivo(mapaUsuarios);
+        //deleteUserFromHashMap(uno);
+        //this.mapaUsuarios=cargarMapaUsuariosDeArchivo();
+        System.out.println(mapaUsuarios);
+
+
+    }
+    public void tercero() throws IOException {
+        Usuario uno=new Usuario("Alan","alan@gmail","password","41079103");
+        Usuario dos=new Usuario("Nico","nico@gmail","password2","31079103");
+        Usuario tres=new Usuario("Santi","fgdf@gmail","password3","41459103");
+        Usuario cuatro=new Usuario("fef","dfg@gmail","password4","1231231234");
+        Usuario cinco=new Usuario("sasd","dfg@gmail","password5","546645645");
+        Usuario seis=new Usuario("asease","dfgdf@gmail","password6","345345345");
+
+        mapaUsuarios.put(cuatro.getDni(),cuatro);
+        mapaUsuarios.put(dos.getDni(),dos);
+        mapaUsuarios.put(tres.getDni(),tres);
+        mapaUsuarios.put(uno.getDni(),uno);
+        mapaUsuarios.put(cinco.getDni(),cinco);
+        mapaUsuarios.put(seis.getDni(),seis);
+        crearHashMapArchivo(mapaUsuarios);
+        this.activeUser=uno;
+        setDocumentKeys();
+        generateNewTransaction(uno,25);
+        generateNewTransaction(uno,100);
+
+
+        //showTransactionsToValidate();
+        //validateTransactions();
+        //validateAllTransactions();
+        //addConfirmedTransactionsToBlockchain();
+        generateNewTransaction(uno,25);
 
     }
 //--------------------------------------------------BLOCKCHAIN ---------------------------------------------------------
