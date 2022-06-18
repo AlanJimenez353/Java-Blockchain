@@ -2,13 +2,11 @@ package com.company;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.DeserializationConfig;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -24,6 +22,9 @@ public class Sistema {
 //-------------------------------------------Constructor ---------------------------------------------------------------
     public Sistema() throws IOException {
         setPaths();
+        createSampleData();
+        loadTransactionsToValidateFile();
+        loadBlockchain();
     }
 
 //-----------------------------------------MANEJO ARCHIVOS--------------------------------------------------------------
@@ -80,13 +81,151 @@ public class Sistema {
         generateNewTransaction(uno,25);
         generateNewTransaction(uno,100);
 
-        loadTransactionsToValidateFile();
+
         //showTransactionsToValidate();
         //validateTransactions();
+        //validateAllTransactions();
+        //addConfirmedTransactionsToBlockchain();
+        generateNewTransaction(uno,25);
+
+    }
+
+    public void createSampleData() throws IOException {
+        System.out.println("Creamos 6 usuarios y los cargamos al Archivo de usuarios ");
+        Usuario uno=new Usuario("Alan","alan@gmail","password","41079103");
+        Usuario dos=new Usuario("Nico","nico@gmail","password2","31079103");
+        Usuario tres=new Usuario("Santi","fgdf@gmail","password3","41459103");
+        Usuario cuatro=new Usuario("fef","dfg@gmail","password4","1231231234");
+        Usuario cinco=new Usuario("sasd","dfg@gmail","password5","546645645");
+        Usuario seis=new Usuario("asease","dfgdf@gmail","password6","345345345");
+
+        mapaUsuarios.put(cuatro.getDni(),cuatro);
+        mapaUsuarios.put(dos.getDni(),dos);
+        mapaUsuarios.put(tres.getDni(),tres);
+        mapaUsuarios.put(uno.getDni(),uno);
+        mapaUsuarios.put(cinco.getDni(),cinco);
+        mapaUsuarios.put(seis.getDni(),seis);
+        crearHashMapArchivo(mapaUsuarios);
+        this.activeUser=uno;
+        setDocumentKeys();
+
+
+    }
+//----------------------------------------------USER OPERATIONS---------------------------------------------------------
+    public void userOperationMakeTransaction() throws IOException {
+        int amount=0;
+        String document;
+        boolean comp=false;
+        Usuario recieber=new Usuario();
+        Scanner scan = new Scanner(System.in);
+
+        while (comp==false) {
+
+            System.out.println("Ingrese el documento del usuario al que quiere enviar dinero \n");
+            document = scan.nextLine();
+            recieber = mapaUsuarios.get(document);
+            if (recieber == null) {
+                System.out.println("El documento ingresado no esta registrado en el sistema como un usuario, intentelo de nuevo \n");
+            }else if(document.equals(activeUser.getDni())){
+                System.out.println("No se puede enviar dinero a usted mismo... Deje de buscar bugs. Intentelo de nuevo \n");
+            }
+            else{
+                comp=true;
+                System.out.println("Ingrese el Monto de la transferencia que quiere realizar \n");
+                amount=scan.nextInt();
+                if(amount<50){
+                    System.out.println("No puede realizar una transferencia menor a 50 coins, intentelo de nuevo \n");
+                    comp=false;
+                }
+            }
+        }
+        generateNewTransaction(recieber,amount);
+        System.out.println("La transaccion fue creada. Una vez validada el dinero sera enviado \n");
+
+    }
+    public void userOperationsValidateTransactions() throws IOException {
+        System.out.println("\n \n \n \n \n \n \n \n \n \n \n \n  \n \n \n \n \n \n \n \n");
+
+        Scanner scan = new Scanner(System.in);
+        int option=4;
+        while (option!=0) {
+            System.out.println(" 1- Mostrar transacciones a validar \n 2- Validar transacciones \n 0- Volver a menu principal");
+            option=scan.nextInt();
+            switch (option) {
+                case 1:
+                    showTransactionsToValidate();
+                    break;
+                case 2:
+                    validateTransactions();
+                    break;
+            }
+        }
+        System.out.println("\n \n \n \n \n \n \n \n \n \n \n \n  \n \n \n \n \n \n \n \n");
+    }
+    public void userOperationsShowProfile(){
+        System.out.println("\n \n \n \n \n \n \n \n \n \n \n \n  \n \n \n \n \n \n \n \n");
+        int option=5;
+        Scanner scan=new Scanner(System.in);
+            System.out.println("Perfil de " + activeUser.getNombre() + "\n");
+            System.out.println("------------------------------------------------------------------------------------");
+            System.out.println("Datos usuario: \n DNI: " + activeUser.getDni() + "\n Mail: " + activeUser.getMail() + "\n ID:" + activeUser.getId() + "\n");
+            System.out.println("Wallet: \n " + activeUser.getWallet()+"\n");
+        System.out.println("------------------------------------------------------------------------------------ \n");
+            System.out.println("Presione 0 para volver al menu principal");
+        while (option!=0) {
+            option=scan.nextInt();
+        }
+        System.out.println("\n \n \n \n \n \n \n \n \n \n \n \n  \n \n \n \n \n \n \n \n");
+    }
+//---------------------------------------------------MUESTRAS-----------------------------------------------------------
+
+    public void Muestra1() throws IOException {
+
+        System.out.println("Creamos 6 usuarios y los cargamos al Archivo de usuarios ");
+        Usuario uno=new Usuario("Alan","alan@gmail","password","41079103");
+        Usuario dos=new Usuario("Nico","nico@gmail","password2","31079103");
+        Usuario tres=new Usuario("Santi","fgdf@gmail","password3","41459103");
+        Usuario cuatro=new Usuario("fef","dfg@gmail","password4","1231231234");
+        Usuario cinco=new Usuario("sasd","dfg@gmail","password5","546645645");
+        Usuario seis=new Usuario("asease","dfgdf@gmail","password6","345345345");
+
+        mapaUsuarios.put(cuatro.getDni(),cuatro);
+        mapaUsuarios.put(dos.getDni(),dos);
+        mapaUsuarios.put(tres.getDni(),tres);
+        mapaUsuarios.put(uno.getDni(),uno);
+        mapaUsuarios.put(cinco.getDni(),cinco);
+        mapaUsuarios.put(seis.getDni(),seis);
+        crearHashMapArchivo(mapaUsuarios);
+        System.out.println("Se crearon los siguientes usuarios : "+mapaUsuarios);
+        //---------------------//
+        System.out.println("Se setea al primer usuario como el usuario Activo");
+        this.activeUser=uno;
+        System.out.println("El usuario activo es: "+activeUser.toString());
+        //--------------------//
+        System.out.println("Se generan 2 nuevas transacciones emitidas por el usuario Activo");
+        setDocumentKeys();
+        generateNewTransaction(uno,25);
+        generateNewTransaction(uno,100);
+        System.out.println("Listo, las transacciones se cargaron en el archivo de Transacciones por validar");
+        //--------------------//
+        System.out.println("Cada transaccion debe ser validada por 3 Usuarios, al dispararse la solicitud de validacion los 3 " +
+                "           usuarios tienen 5 minutos para declinar o aceptar la transaccion a la blockchain, de pasarse ese tiempo" +
+                "            el sistema vuelve a generar 3 validadores random dentro de la lista de usuarios quitando a quienes no respondieron a tiempo" +
+                "               yapa: confirmar una transaccion otorga 50 UTNCoins  ");
+        //-------------------//
+        System.out.println("Para evitar este proceso acabamos de validar todas las transacciones ya que esto es una muestra :)");
         validateAllTransactions();
         addConfirmedTransactionsToBlockchain();
+        System.out.println("Como puede ver las transacciones ya se añadieron a la blockchain y se eliminaron del archivo de transacciones por confirmar");
+
     }
-//-----------------------------------------------BLOCKCHAIN ----------------------------------------------------
+//--------------------------------------------------BLOCKCHAIN ---------------------------------------------------------
+    public void createBlockchainFile(HashMap<Integer, Transaction> mapT) throws IOException {
+    File transactionsToValidatePath=new File(BLOCKCHAIN_PATH+"\\Blockchain.json");
+    ObjectMapper mapper=new ObjectMapper();
+    transactionsToValidatePath.delete();
+    mapper.writeValue(transactionsToValidatePath,mapT);
+}
     public void addConfirmedTransactionsToBlockchain() throws IOException {
             HashMap<Integer,Transaction>transactionsAUX=this.transactionToValidateMap;
             HashMap<Integer,Transaction>transactionsToDelete=this.transactionToValidateMap;
@@ -106,10 +245,10 @@ public class Sistema {
                     integers.add(entry.getKey());
                 }
             }
-        deleteTransactions(integers);
+        deleteValidatedTransactions(integers);
         updateBlockchain();
     }
-public void deleteTransactions(ArrayList<Integer>integers) throws IOException {
+    public void deleteValidatedTransactions(ArrayList<Integer>integers) throws IOException {
 
     for (Integer e:integers) {
         this.transactionToValidateMap.remove(e);
@@ -117,12 +256,31 @@ public void deleteTransactions(ArrayList<Integer>integers) throws IOException {
     createTransactionsToValidateFile(this.transactionToValidateMap);
 
 }
-public void updateBlockchain() throws IOException {
+    public void updateBlockchain() throws IOException {
     File blockchainPath=new File(BLOCKCHAIN_PATH+"\\Blockchain.json");
     ObjectMapper mapper=new ObjectMapper();
     blockchainPath.delete();
     mapper.writeValue(blockchainPath,blockchain);
 }
+    public void loadBlockchain() throws IOException {
+
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
+        mapper.enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+        mapper.enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
+        mapper.enable(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES);
+
+        File file = new File(BLOCKCHAIN_PATH + "\\Blockchain.json");
+        if(file.exists()){
+            TypeReference<HashMap<Integer, Transaction>> typeRef
+                    = new TypeReference<HashMap<Integer, Transaction>>() {
+            };
+
+            this.blockchain = mapper.readValue(file, typeRef);
+        }else{
+            createBlockchainFile(blockchain);
+        }
+    }
 
 
 //-----------------------------------------------ACTIVE USER ACTIONS----------------------------------------------------
@@ -133,42 +291,48 @@ public void updateBlockchain() throws IOException {
             for (Map.Entry<String,Boolean> transactionEntry : entry.getValue().getValidators().entrySet()) {
                 if(transactionEntry.getKey().matches((activeUser.getDni())))
                 {
-                    transactionsToValidate=transactionsToValidate+1;
-                    System.out.println(entry.getValue().toString());
+                    if(transactionEntry.getValue()==false) {
+                        transactionsToValidate = transactionsToValidate + 1;
+                    }
                 }
             }
         }
         if (transactionsToValidate==0){
-            System.out.println("Usted no tiene transacciones por validar");
+            System.out.println("Usted no tiene transacciones por validar \n");
         }else{
-            System.out.println("Usted tiene : "+transactionsToValidate+" transacciones para validar");
+            System.out.println("Usted tiene : "+transactionsToValidate+" transacciones para validar \n");
         }
     }
     //Agregar 50 UTN Coins por cada transaccion confirmada
     public void validateTransactions() throws IOException {
         int numberOftransactionsValidated=0;
         HashMap<Integer,Transaction>transactionsAUX=this.transactionToValidateMap;
-
+        ArrayList<Integer>ses=new ArrayList<>();
 
         for (Map.Entry<Integer, Transaction> entry : transactionToValidateMap.entrySet()) {
             for (Map.Entry<String,Boolean> transactionEntry : entry.getValue().getValidators().entrySet()) {
                 if(transactionEntry.getKey().matches((activeUser.getDni())))
                 {
                     if(transactionEntry.getValue()==false) {
-                        transactionsAUX.get(entry.getKey()).updateValidation(activeUser.getDni());
+                        ses.add(entry.getKey());
                         numberOftransactionsValidated = numberOftransactionsValidated + 1;
                     }
                 }
             }
         }
+        //Esto es por un problema de concurrencia al iterar sobre el maldito hashmap
+        for (Integer e:ses
+             ) {
+            transactionsAUX.get(e).updateValidation(activeUser.getDni());
+        }
         if (numberOftransactionsValidated==0){
-            System.out.println("Usted no tiene transacciones por validar");
+            System.out.println("Usted no tiene transacciones por validar \n");
         }
         else{
-            System.out.println("Usted Valido : "+numberOftransactionsValidated+" transacciones");
-            System.out.println("Se añadieron: "+(50*numberOftransactionsValidated)+" UTN Coins a su billetera");
+            System.out.println("Usted Valido : "+numberOftransactionsValidated+" transacciones \n");
+            System.out.println("Se añadieron: "+(2*numberOftransactionsValidated)+" UTN Coins a su billetera \n");
         }
-        activeUser.getWallet().setUtnCoins(activeUser.getWallet().getUtnCoins()+(50*numberOftransactionsValidated));
+        activeUser.getWallet().setUtnCoins(activeUser.getWallet().getUtnCoins()+(2*numberOftransactionsValidated));
         createTransactionsToValidateFile(transactionsAUX);
     }
 
@@ -334,27 +498,35 @@ public void updateBlockchain() throws IOException {
     }
     public void loadTransactionsToValidateFile() throws IOException {
 
-        ObjectMapper mapper=new ObjectMapper();
+        ObjectMapper mapper = new ObjectMapper();
         mapper.enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
         mapper.enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
         mapper.enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
         mapper.enable(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES);
 
-        File file=new File(TRANSACTIONS_TO_VALIDATE_PATH+"\\HashMapTransactionsToValidate.json");
-        TypeReference<HashMap<Integer,Transaction>> typeRef
-                = new TypeReference<HashMap<Integer,Transaction>>() {};
+        File file = new File(TRANSACTIONS_TO_VALIDATE_PATH + "\\HashMapTransactionsToValidate.json");
+        if (file.exists()) {
+            TypeReference<HashMap<Integer, Transaction>> typeRef
+                    = new TypeReference<HashMap<Integer, Transaction>>() {
+            };
 
-        this.transactionToValidateMap= mapper.readValue(file, typeRef);
+            this.transactionToValidateMap = mapper.readValue(file, typeRef);
+        }else{
+            createTransactionsToValidateFile(transactionToValidateMap);
+        }
     }
+    public int transactionIdGenerator(){
+        int id= transactionToValidateMap.size()+blockchain.size();
+        id++;
+        return id;
+    }
+
     //TODO
-
-
 
 ///----------------------------------------------TRANSACTIONS-----------------------------------------------------------
     private void generateNewTransaction(Usuario recieber,int amount) throws IOException {
-        Transaction newTransaction=new Transaction(recieber.getWallet(),activeUser.getWallet(),generateTransactionValidators(),amount);
+        Transaction newTransaction=new Transaction(recieber.getWallet(),activeUser.getWallet(),generateTransactionValidators(),amount,transactionIdGenerator());
         addTransactionToValidate(newTransaction);
-
     }
     private HashMap<String,Boolean> generateTransactionValidators(){
         //ACA TAMBIEN TENEMOS QUE RECIBIR EL USUARIO QUE CREA LA TRANSACCION Y EL USUARIO QUE LA RECIBE Y COMPROBAR QUE NO SEAN UNO DE LOS VALIDADORES

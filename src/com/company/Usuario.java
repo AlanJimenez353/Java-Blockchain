@@ -61,7 +61,7 @@ public class Usuario implements Serializable {
         this.contraseña = contraseña;
     }
     public String getDni() {
-        return dni;
+        return this.dni;
     }
     public void setDni(String dni) {
         this.dni = dni;

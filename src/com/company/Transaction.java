@@ -14,13 +14,12 @@ public class Transaction implements Serializable {
     private Wallet sender;
     private Wallet recieber;
 
-    public Transaction(Wallet recieber, Wallet sender, HashMap<String,Boolean> validators, int amount) {
+    public Transaction(Wallet recieber, Wallet sender, HashMap<String,Boolean> validators, int amount, int id) {
         this.recieber = recieber;
         this.sender=sender;
         this.recieber=recieber;
         this.amount=amount;
-        setIdentificador();
-        setId();
+        this.id=id;
         this.validators=validators;
     }
 
@@ -34,8 +33,8 @@ public class Transaction implements Serializable {
     public void setId() {
         this.id =identificador;
     }
-    public void setIdentificador(){
-        identificador=identificador+1;
+    public void setIdentificador() {
+        identificador = identificador + 1;
     }
     public HashMap<String, Boolean> getValidators() {
         return validators;

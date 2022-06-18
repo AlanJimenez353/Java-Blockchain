@@ -1,13 +1,32 @@
 package com.company;
 
 import java.io.IOException;
+import java.util.Scanner;
 
 public class Main {
 
     public static void main(String[] args) throws IOException {
 
         Sistema sistem=new Sistema();
-        sistem.tercero();
+        int option=1;
+        Scanner scan=new Scanner(System.in);
+
+        while (option != 0){
+
+            System.out.println("MENU \n  1- Realizar Transaccion \n  2- Validar Transacciones \n  3- Mi perfil");
+            option=scan.nextInt();
+            switch (option){
+                case 1:
+                    sistem.userOperationMakeTransaction();
+                    break;
+                case 2:
+                    sistem.userOperationsValidateTransactions();
+                    break;
+                case 3:
+                    sistem.userOperationsShowProfile();
+
+            }
+        }
     }
 }
 
