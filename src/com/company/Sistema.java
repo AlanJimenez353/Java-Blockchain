@@ -130,7 +130,6 @@ public class Sistema {
 
         for (Map.Entry<Integer,Transaction>entry:blockchain.entrySet()) {
             Usuario sender= getUserByOwnerReference(entry.getValue().getSender().getOwnerReference());
-            System.out.println(sender);
             if(sender.getDni().equals(activeUser.getDni())){
                 transactionsSuccess.add(entry.getValue());
                 successempty=false;
@@ -139,8 +138,6 @@ public class Sistema {
         }
         for (Map.Entry<Integer,Transaction>entry:transactionToValidateMap.entrySet()) {
             Usuario sender= getUserByOwnerReference(entry.getValue().getSender().getOwnerReference());
-            System.out.println(entry.getValue().getSender().getOwnerReference());
-            System.out.println(sender);
             if(sender.getDni().equals(activeUser.getDni())){
                 transactionsNotValidated.add(entry.getValue());
                 tovalidateEmpty=false;
@@ -148,23 +145,25 @@ public class Sistema {
         }
 
         System.out.println("------------------ Historial de Transacciones ----------------------\n \n");
-        if(successempty ==true) {
-            System.out.println("Transacciones esperando a ser validadas: \n" + transactionsNotValidated.toString()+" \n");
+        if(tovalidateEmpty ==false) {
+            System.out.println("Transacciones esperando a ser validadas: \n");
+            for (Transaction e:transactionsNotValidated) {
+                System.out.println(e.toString()+"\n");
+            }
         }else{
             System.out.println("No tiene transacciones esperando a ser validadas \n");
         }
         System.out.println("\n \n");
 
-        if(tovalidateEmpty ==true){
-            System.out.println("Transacciones validadas y subidas a la blockchain: \n"+transactionsSuccess.toString()+" \n");
+        if(successempty ==false){
+            System.out.println("Transacciones validadas y subidas a la blockchain: \n");
+            for (Transaction e:transactionsSuccess) {
+                System.out.println(e.toString()+"\n");
+
+            }
         }else{
             System.out.println("No tiene transacciones registradas en la blockchain \n");
         }
-
-
-
-
-
 
     }
 //---------------------------------------------------MUESTRAS-----------------------------------------------------------
@@ -360,7 +359,6 @@ public class Sistema {
             System.out.println("Usted tiene : "+transactionsToValidate+" transacciones para validar \n");
         }
     }
-    //Agregar 2 UTN Coins por cada transaccion confirmada
     public void validateTransactions() throws IOException {
         int numberOftransactionsValidated=0;
         HashMap<Integer,Transaction>transactionsAUX=this.transactionToValidateMap;
@@ -739,8 +737,7 @@ public class Sistema {
         }
     }
     ///Arreglar esta funcion mas tarde (Funciona igual).
-    private int ingresarOpcion()
-    {
+    private int ingresarOpcion()    {
         int opcion=666;
         Scanner input=new Scanner(System.in);
         try
