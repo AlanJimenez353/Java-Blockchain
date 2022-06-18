@@ -22,9 +22,10 @@ public class Sistema {
 //-------------------------------------------Constructor ---------------------------------------------------------------
     public Sistema() throws IOException {
         setPaths();
-        createSampleData();
+        loadUserFile();
         loadTransactionsToValidateFile();
         loadBlockchain();
+        createSampleData();
     }
 
 //-----------------------------------------MANEJO ARCHIVOS--------------------------------------------------------------
@@ -108,7 +109,6 @@ public class Sistema {
         crearHashMapArchivo(mapaUsuarios);
         this.activeUser=uno;
         setDocumentKeys();
-
 
     }
 //----------------------------------------------USER OPERATIONS---------------------------------------------------------
@@ -243,10 +243,22 @@ public class Sistema {
                     transactionsAUX.get(entry.getKey()).getValidators().remove(entry.getKey());
                     blockchain.put(entry.getKey(),entry.getValue());
                     integers.add(entry.getKey());
+                    // Ustedes se preguntaran que rayos hice aca... yo me pregunto lo mismo, pero funciona
+                     mapaUsuarios.get(getUserByOwnerReference(entry.getValue().getRecieber().getOwnerReference()).getDni()).getWallet().setMoney(entry.getValue().getRecieber().getMoney()+entry.getValue().getAmount());
+                     mapaUsuarios.get(getUserByOwnerReference(entry.getValue().getSender().getOwnerReference()).getDni()).getWallet().setMoney(entry.getValue().getSender().getMoney() - entry.getValue().getAmount());
                 }
             }
         deleteValidatedTransactions(integers);
         updateBlockchain();
+        crearHashMapArchivo(mapaUsuarios);
+    }
+    public Usuario getUserByOwnerReference(int ownerReference){
+        for (Map.Entry<String,Usuario>entry:mapaUsuarios.entrySet()) {
+            if (entry.getValue().getWallet().getOwnerReference()==ownerReference){
+                return mapaUsuarios.get(entry.getKey());
+            }
+        }
+        return null;
     }
     public void deleteValidatedTransactions(ArrayList<Integer>integers) throws IOException {
 
@@ -303,7 +315,7 @@ public class Sistema {
             System.out.println("Usted tiene : "+transactionsToValidate+" transacciones para validar \n");
         }
     }
-    //Agregar 50 UTN Coins por cada transaccion confirmada
+    //Agregar 2 UTN Coins por cada transaccion confirmada
     public void validateTransactions() throws IOException {
         int numberOftransactionsValidated=0;
         HashMap<Integer,Transaction>transactionsAUX=this.transactionToValidateMap;
@@ -337,11 +349,12 @@ public class Sistema {
     }
 
 //--------------------------------------------------ADMIN ACTIONS-------------------------------------------------------
-    public void validateAllTransactions() throws IOException {
+    public void validateAllTransactions() throws IOException  {
     for (Map.Entry<Integer, Transaction> entry : transactionToValidateMap.entrySet()) {
         transactionToValidateMap.get(entry.getKey()).updateAllValidatorsToTrue();
     }
     createTransactionsToValidateFile(this.transactionToValidateMap);
+    addConfirmedTransactionsToBlockchain();
 }
 
 //-----------------------------------------------GETTERS AND SETTERS----------------------------------------------------
@@ -441,9 +454,12 @@ public class Sistema {
     }
 
 //-------------------------------------------MANEJO HASHMAP USUARIOS----------------------------------------------------
-    public void crearHashMapArchivo(HashMap<String,Usuario>map) throws IOException {
-        File mapPath=new File(USUARIOS_PATH+"\\HashMapUsuarios"+".json");
+    public void  crearHashMapArchivo(HashMap<String,Usuario>map) throws IOException {
         ObjectMapper mapper=new ObjectMapper();
+        File mapPath=new File(USUARIOS_PATH+"\\HashMapUsuarios"+".json");
+        if(mapPath.exists()){
+            mapPath.delete();
+        }
         mapper.writeValue(mapPath, map);
     }
     public HashMap<String,Usuario> cargarMapaUsuariosDeArchivo() throws IOException {
@@ -477,6 +493,31 @@ public class Sistema {
     public void mostrarHashMapUsuarios(){
         for (HashMap.Entry<String, Usuario> entry : mapaUsuarios.entrySet()) {
             System.out.println("clave=" + entry.getKey() + ", valor=" + entry.getValue());
+        }
+    }
+    public void updateUserFile() throws IOException {
+        File userpath=new File(USUARIOS_PATH+"\\HashMapUsuarios.json");
+        ObjectMapper mapper=new ObjectMapper();
+        userpath.delete();
+        mapper.writeValue(userpath,mapaUsuarios);
+    }
+    public void loadUserFile() throws IOException {
+
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
+        mapper.enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+        mapper.enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY);
+        mapper.enable(DeserializationFeature.FAIL_ON_IGNORED_PROPERTIES);
+
+        File file = new File(USUARIOS_PATH + "\\HashMapUsuarios.json");
+        if (file.exists()) {
+            TypeReference<HashMap<String, Usuario>> typeRef
+                    = new TypeReference<HashMap<String, Usuario>>() {
+            };
+
+            this.mapaUsuarios = mapper.readValue(file, typeRef);
+        }else{
+            crearHashMapArchivo(mapaUsuarios);
         }
     }
 

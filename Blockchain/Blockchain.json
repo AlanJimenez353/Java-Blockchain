@@ -1,11 +1,1 @@
-{"1":
-{"id":1,
-  "validators":{"345345345":true,"31079103":true,"41079103":true},
-  "amount":25,"sender":{"utnCoins":100.0,"money":0.0,"ownerReference":4236},
-  "recieber":{"utnCoins":100.0,"money":0.0,"ownerReference":4236}},
-
-  "2":{"id":2,
-  "validators":{"1231231234":true,"41459103":true,"31079103":true},
-  "amount":100,
-  "sender":{"utnCoins":100.0,"money":0.0,"ownerReference":4236},
-  "recieber":{"utnCoins":100.0,"money":0.0,"ownerReference":4236}}}
+{"1":{"id":1,"validators":{"345345345":true,"546645645":true,"41079103":true},"amount":400,"sender":{"utnCoins":100.0,"money":-700.0,"ownerReference":2745},"recieber":{"utnCoins":100.0,"money":700.0,"ownerReference":3240}},"2":{"id":2,"validators":{"546645645":true,"41079103":true,"31079103":true},"amount":300,"sender":{"utnCoins":100.0,"money":-700.0,"ownerReference":2745},"recieber":{"utnCoins":100.0,"money":700.0,"ownerReference":3240}}}

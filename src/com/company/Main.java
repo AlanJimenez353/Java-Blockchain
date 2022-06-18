@@ -13,7 +13,7 @@ public class Main {
 
         while (option != 0){
 
-            System.out.println("MENU \n  1- Realizar Transaccion \n  2- Validar Transacciones \n  3- Mi perfil");
+            System.out.println("MENU \n  1- Realizar Transaccion \n  2- Validar Transacciones \n  3- Mi perfil\n  4- Validar todas las Transacciones");
             option=scan.nextInt();
             switch (option){
                 case 1:
@@ -24,6 +24,8 @@ public class Main {
                     break;
                 case 3:
                     sistem.userOperationsShowProfile();
+                    break;
+                case 4: sistem.validateAllTransactions();
 
             }
         }
