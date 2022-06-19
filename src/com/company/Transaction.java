@@ -15,7 +15,6 @@ public class Transaction implements Serializable {
     private Wallet recieber;
 
     public Transaction(Wallet recieber, Wallet sender, HashMap<String,Boolean> validators, int amount, int id) {
-        this.recieber = recieber;
         this.sender=sender;
         this.recieber=recieber;
         this.amount=amount;

@@ -3,6 +3,8 @@ package com.company;
 import java.io.File;
 import java.io.IOException;
 import java.net.Inet4Address;
+import java.time.LocalDate;
+import java.time.Period;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -208,61 +210,7 @@ public class Sistema {
         System.out.println("Como puede ver las transacciones ya se añadieron a la blockchain y se eliminaron del archivo de transacciones por confirmar");
 
     }
-    public void primero() throws IOException {
-        Usuario uno=new Usuario("Alan","alan@gmail","password","41079103");
-        Usuario dos=new Usuario("Nico","nico@gmail","password2","31079103");
-        Usuario tres=new Usuario("Santi","santi@gmail","password3","41459103");
 
-        AgregarUsuarioAarchivo(uno);
-        AgregarUsuarioAarchivo(dos);
-        AgregarUsuarioAarchivo(tres);
-        EliminarUsuarioArchivo(tres);
-
-
-    }
-    public void segundo() throws IOException {
-        Usuario uno=new Usuario("Alan","alan@gmail","password","41079103");
-        Usuario dos=new Usuario("Nico","nico@gmail","password2","31079103");
-        Usuario tres=new Usuario("Santi","santi@gmail","password3","41459103");
-
-        mapaUsuarios.put(uno.getDni(),uno);
-        mapaUsuarios.put(dos.getDni(),dos);
-        mapaUsuarios.put(tres.getDni(),tres);
-        crearHashMapArchivo(mapaUsuarios);
-        //deleteUserFromHashMap(uno);
-        //this.mapaUsuarios=cargarMapaUsuariosDeArchivo();
-        System.out.println(mapaUsuarios);
-
-
-    }
-    public void tercero() throws IOException {
-        Usuario uno=new Usuario("Alan","alan@gmail","password","41079103");
-        Usuario dos=new Usuario("Nico","nico@gmail","password2","31079103");
-        Usuario tres=new Usuario("Santi","fgdf@gmail","password3","41459103");
-        Usuario cuatro=new Usuario("fef","dfg@gmail","password4","1231231234");
-        Usuario cinco=new Usuario("sasd","dfg@gmail","password5","546645645");
-        Usuario seis=new Usuario("asease","dfgdf@gmail","password6","345345345");
-
-        mapaUsuarios.put(cuatro.getDni(),cuatro);
-        mapaUsuarios.put(dos.getDni(),dos);
-        mapaUsuarios.put(tres.getDni(),tres);
-        mapaUsuarios.put(uno.getDni(),uno);
-        mapaUsuarios.put(cinco.getDni(),cinco);
-        mapaUsuarios.put(seis.getDni(),seis);
-        crearHashMapArchivo(mapaUsuarios);
-        this.activeUser=uno;
-        setDocumentKeys();
-        generateNewTransaction(uno,25);
-        generateNewTransaction(uno,100);
-
-
-        //showTransactionsToValidate();
-        //validateTransactions();
-        //validateAllTransactions();
-        //addConfirmedTransactionsToBlockchain();
-        generateNewTransaction(uno,25);
-
-    }
 //--------------------------------------------------BLOCKCHAIN ---------------------------------------------------------
     public void createBlockchainFile(HashMap<Integer, Transaction> mapT) throws IOException {
     File transactionsToValidatePath=new File(BLOCKCHAIN_PATH+"\\Blockchain.json");
@@ -652,92 +600,126 @@ public class Sistema {
         return validators;
     }
 
-//------------------------------------------MENU PRINCIPAL------------------------------------------------------------//
-    public void MenuLogin()
-    {
-        Usuario uno=new Usuario("Alan","alan@gmail","passworD1","40000001");
-        Usuario dos=new Usuario("Nico","nico@gmail","passworD2","40000002");
-        Usuario tres=new Usuario("Santi","santi@gmail","passworD3","40000003");
-        Usuario cuatro=new Usuario("Ramiro","rama@gmail","passworD4","40000004");
-        Usuario cinco=new Usuario("Julian","julian@gmail","passworD5","40000005");
-        Usuario seis=new Usuario("Mario","mario@gmail","passworD6","40000006");
 
-        mapaUsuarios.put(uno.getDni(),uno);
-        mapaUsuarios.put(dos.getDni(),dos);
-        mapaUsuarios.put(tres.getDni(),tres);
-        mapaUsuarios.put(cuatro.getDni(),cuatro);
-        mapaUsuarios.put(cinco.getDni(),cinco);
-        mapaUsuarios.put(seis.getDni(),seis);
 
-        opcionesMenuLogin();
 
-        switch (ingresarOpcion())
-        {
-            case 1:
-            {
-                activeUser=login();
-                if(activeUser!=null) {
-                    System.out.println("Login exitoso");
-                }else {
-                    System.out.println("Usuario invalido");
-                }
-                break;
-            }
-            case 2:
-            {
-                Usuario newUser=RegistroUsuario();
-                if(newUser!=null) {
-                    mapaUsuarios.put(newUser.getDni(), newUser);
-                    System.out.println("Registro exitoso.");
-                }
-                else
-                {
-                    System.out.println("Error de registro");
-                }
-                break;
-            }
-            case 0:
-            {
-                System.out.println("Saliendo del sistema...");
-                break;
-            }
-            default:
-            {
-                System.out.println("Opcion incorrecta");
-                break;
-            }
-        }
-    }
-
-//-----------------------------------------Opciones de Login----------------------------------------------------------//
-    public Usuario login() {
+    //-----------------------------------------Opciones de Login----------------------------------------------------------//
+    public boolean login() {
+        boolean confirmacion=false;
+        System.out.println("[Para ingresar a tu cuenta necesitamos los siguientes datos]");
         String dniLogin = ingresarDNI();
         String passwordLogin = ingresarPassword();
+
         Usuario newUser = validUsuario(dniLogin, passwordLogin);
-        if (newUser != null) {return newUser;}else{return null;}
+        if (newUser != null) {
+            confirmacion=true;
+            setActiveUser(newUser);
+        }else{
+            System.out.println("Login Incorrecto");
+        }
+
+        return confirmacion;
     }
-    public Usuario RegistroUsuario() {
+
+    public void RegistroUsuario() {
+        int dia, mes, anio;
+        String nombre,dni,email,password;
+        Scanner input=new Scanner(System.in);
+        boolean validarRegistro=false;
+
         System.out.println("[ Registro de Usuario ]");
-        Usuario newUser=new Usuario(ingresarUserName(), ingresarEmail(), ingresarPassword(), ingresarDNI());
-        if(existUsuario(newUser.getDni())) {return null;}else{return newUser;}
+        System.out.println("Bienvenido al banco, vamos a iniciar el registro completando los siguientes campos.");
+
+        System.out.println("\n [Ingresar tu nombre y apellido completo]");
+        nombre=ingresarUserName();
+        System.out.println("\n [Ingresar tu email]");
+        email=ingresarEmail();
+        System.out.println("\n [Ingresar tu DNI]");
+        dni=ingresarDNI();
+        System.out.println("\n [Ingresar tu Password]");
+        password=ingresarPassword();
+
+        System.out.println("[Ingresar fecha de nacimiento]");
+        System.out.println("Dia: ");
+        dia=input.nextInt();
+        System.out.println("Mes: ");
+        mes=input.nextInt();
+        System.out.println("Año: ");
+        anio=input.nextInt();
+
+        if(validAge18(LocalDate.of(anio,mes,dia))){
+            if (existUsuario(dni)) {
+                System.out.println("El usuario con el dni "+dni+" ya existe.");
+                validarRegistro=false;
+            } else {
+                validarRegistro=true;
+            }
+        }else{
+            System.out.println("Para registrarse necesitas ser mayor de edad.");
+        }
+
+        if(validarRegistro) {
+            Usuario newUser=new Usuario(nombre,email,password,dni);
+            mapaUsuarios.put(newUser.getDni(), newUser);
+            try {
+                addUserToHashMapFile(newUser);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+
+        }else{
+            System.out.println("El usuario no se registro.");
+        }
+
     }
-    private void opcionesMenuLogin() {
-        System.out.println("   [ Blockchain - V1 ]");
+
+    //------------------------------------------MENU PRINCIPAL------------------------------------------------------------//
+
+    public void opcionesMenuLogin() {
+        System.out.println("   [ Login - Regist ]");
         System.out.println(" 1 - Iniciar seccion.");
         System.out.println(" 2 - Registrarse.. ");
         System.out.println(" 0 - Salir");
     }
     private void opcionesMenuPrincipal(Usuario activeUser) {
         if(activeUser!=null) {
-            System.out.println("      [ Blockchain - V1 ]");
+            System.out.println("      [ Menu Principal ]");
             System.out.println(" [ Bienvenido " + activeUser.getNombre() + " ]");
-            System.out.println(" 1 - Deposito");
-            System.out.println(" 2 - Transferencia");
-            System.out.println(" 3 - Exit");
+            System.out.println("1 - Transacciones");
+            System.out.println("2 - Ver mi perfil");
+            System.out.println("0 - Salir");
         }
     }
+
+    private void opcionesMenuTransacciones(Usuario activeUser)
+    {
+        System.out.println("      [ Transacciones ]");
+        System.out.println("1- Realizar Transaccion");
+        System.out.println("2- Validar Transacciones");
+        System.out.println("3- Validar todas las Transacciones");
+        System.out.println("4- Deposito");
+        System.out.println("0 - Salir");
+    }
+
+    //----------------------------------Validaciones Login y Registrp------------------------------------------------------//
+
+
+    public boolean validAge18(LocalDate fechaNacimiento)
+    {
+        boolean valido=false;
+        Period edad = Period.between(fechaNacimiento, LocalDate.now());
+        System.out.println(String.format("%d años, %d meses y %d días",
+                edad.getYears(),
+                edad.getMonths(),
+                edad.getDays()));
+        if(edad.getYears()>=18)
+        {
+            valido=true;
+        }
+        return valido;
+    }
     ///Arreglar esta funcion mas tarde (Funciona igual).
-    private int ingresarOpcion()    {
+    public int ingresarOpcion()    {
         int opcion=666;
         Scanner input=new Scanner(System.in);
         try
@@ -754,7 +736,6 @@ public class Sistema {
         }
         return opcion;
     }
-    //----------------------------------Validaciones Login y Registrp------------------------------------------------------//
     public Usuario validUsuario(String dni,String password)
     {
         Usuario retorno=null;
