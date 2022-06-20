@@ -84,13 +84,13 @@ public class Usuario implements Serializable {
 
     @Override
     public String toString() {
-        return "Usuario{" +
-                "id=" + id +
-                ", mail='" + mail + '\'' +
-                ", contraseña='" + contraseña + '\'' +
-                ", dni='" + dni + '\'' +
-                ", nombre='" + nombre + '\'' +
-                ", wallet=" + wallet.toString() +
-                '}';
+        return "[Usuario] " + "\n"+
+                " | ID:" + id +
+                " | Mail:" + mail +
+                " | Password:" + contraseña +
+                " | DNI:" + dni +
+                " | Nombre:" + nombre +
+                "\n | " + wallet.toString() +
+                " \n ";
     }
 }

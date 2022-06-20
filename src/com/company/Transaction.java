@@ -76,12 +76,11 @@ public class Transaction implements Serializable {
 
     @Override
     public String toString() {
-        return "Transaction{" +
-                "id=" + id +
-                ", validators=" + validators +
-                ", amount=" + amount +
-                ", sender=" + sender.toString() +
-                ", recieber=" + recieber.toString() +
-                '}';
+        return "[Transaction]" +
+                " | ID:" + id +
+                " | Validators:" + validators +
+                " | Amount:" + amount +
+                " | Sender:" + sender.toString() +
+                " | Recieber:" + recieber.toString()+"\n";
     }
 }

@@ -44,10 +44,9 @@ public class Wallet implements Serializable {
 
     @Override
     public String toString() {
-        return "Wallet{" +
-                "utnCoins=" + utnCoins +
-                ", money=" + money +
-                ", ownerReference=" + ownerReference +
-                '}';
+        return "[Wallet] " +
+                " | Coin: UTN$" + utnCoins +
+                " | Money: $" + money +
+                " | Owner Reference:" + ownerReference + " ";
     }
 }
