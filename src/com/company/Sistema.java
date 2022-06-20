@@ -85,35 +85,72 @@ public class Sistema {
         boolean comp=false;
         Usuario recieber=new Usuario();
         Scanner scan = new Scanner(System.in);
+        boolean salir=false;
 
         while (comp==false) {
-
             System.out.println("Ingrese el documento del usuario al que quiere enviar dinero \n");
             document = ingresarDNI();
             recieber = mapaUsuarios.get(document);
+
             if (recieber == null) {
-                System.out.println("El documento ingresado no esta registrado en el sistema como un usuario, intentelo de nuevo \n");
+                System.out.println("El documento ingresado no esta registrado en el sistema como un usuario.\n");
+                salir=true;
             }else if(document.equals(activeUser.getDni())){
                 System.out.println("No se puede enviar dinero a usted mismo... Deje de buscar bugs. Intentelo de nuevo \n");
-            }
-            else{
+                salir=true;
+            }else{
                 comp=true;
                 System.out.println("Ingrese el Monto de la transferencia que quiere realizar \n");
                 amount=scan.nextInt();
-                if(amount<50){
+                if(amount>=50){
+                    salir=false;
+                    comp=true;
+                }else{
                     System.out.println("No puede realizar una transferencia menor a 50 coins, intentelo de nuevo \n");
+                    salir=true;
                     comp=false;
                 }
-                if(amount>getActiveUser().getWallet().getUtnCoins())
+                if(amount<=getActiveUser().getWallet().getUtnCoins())
                 {
+                    salir=false;
+                    comp=true;
+                }else{
                     System.out.println("No tenes saldo suficiente para realizar la transaccion");
+                    salir=true;
                     comp=false;
                 }
             }
+            if(salir==true ) {
+                System.out.println("[---------------------------------------------------------------------------]");
+                System.out.println("¿Usted quiere intentar transferir otra vez?");
+                System.out.println("1:Si.");
+                System.out.println("2:No.");
+                switch (ingresarOpcion()) {
+                    case 1: {
+                        comp =false;
+                        salir=false;
+                        break;
+                    }
+                    case 2: {
+                        comp = true;
+                        salir = true;
+                        break;
+                    }
+                    default: {
+                        System.out.println("[Opcion incorrecta]");
+                        break;
+                    }
+                }
+                System.out.println("[---------------------------------------------------------------------------]");
+            }
         }
-        generateNewTransaction(recieber,amount);
-        System.out.println("La transaccion fue creada. Una vez validada el dinero sera enviado \n");
-    }
+
+        if(salir==false) {
+            generateNewTransaction(recieber, amount);
+            System.out.println("La transaccion fue creada. Una vez validada el dinero sera enviado \n");
+        }
+
+        }
     public void userOperationsValidateTransactions() throws IOException {
         System.out.println("\n \n \n \n \n \n \n \n \n \n \n \n  \n \n \n \n \n \n \n \n");
 
@@ -648,40 +685,6 @@ public class Sistema {
     }
 
 
-    //-------------------------------------------EXCHANGE-----------------------------------------------------------------//
-
-    public void BuyUTNwithMoney()
-    {
-        double precioUTNcoin=ContarUtnCoinsTotalEnBanco();
-
-        System.out.println("Valor actual del UTNcoins: ");
-
-        ///Falta desarrollar parte logica
-    }
-    public void BuyMoneywithUTNcoin()
-    {
-        double precioDolar=ContarDineroTotalEnBanco();
-
-        System.out.println("Valor actual del Dolar: ");
-
-        ///Falta desarrollar parte logica
-    }
-
-    public double ContarDineroTotalEnBanco() {
-        double money=0;
-        for (HashMap.Entry<String, Usuario> entry : mapaUsuarios.entrySet()) {
-            money+=entry.getValue().getWallet().getMoney();
-        }
-        return money;
-    }
-    public double ContarUtnCoinsTotalEnBanco() {
-        double money=0;
-        for (HashMap.Entry<String, Usuario> entry : mapaUsuarios.entrySet()) {
-            money+=entry.getValue().getWallet().getUtnCoins();
-        }
-        return money;
-    }
-
     //-----------------------------------------Opciones de Login----------------------------------------------------------//
     public boolean login() {
         boolean confirmacion=false;
@@ -777,8 +780,6 @@ public class Sistema {
         System.out.println("1- Realizar Transaccion");
         System.out.println("2- Validar Transacciones");
         System.out.println("3- Mostrar las transacciones del usuario");
-        System.out.println("4- Comprar dinero con UTNcoins");
-        System.out.println("5- Comprar UTNCoins con dinero");
         System.out.println("0 - Salir");
     }
 
@@ -1038,69 +1039,5 @@ public class Sistema {
             return false;
         }
     }
-
-//---------------------------------------Metodos Ingreso, Reintegro y Transferencia-------------------------------------//
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    ///* Parametro : Recibe la billetera a la que se le carga el ingreso del segundo parametro.                       *///
-    ///* Retorno:  true=Se realizo correctamente el ingreso |  false=el ingreso es 0 o menor.                         *///
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    public boolean ingreso(Wallet receptor,double ingreso) {
-    boolean ingresoCorrecto = true;
-    try {
-        if (ingreso > 0) {
-            ingresoCorrecto = false;
-        } else {
-            receptor.setMoney(receptor.getMoney()+ingreso);
-        }
-    }catch (ArithmeticException arithmeticException)
-    {
-        System.out.println("Error aritmetico en el ingreso de utnCoin$");
-    }
-    return ingresoCorrecto;
-}
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    ///* Parametro : Recibe una billetera a la que se le descontara el dinero del segundo parametro                   *///
-    ///* Retorno:  true=Se realizo correctamente la transferencia | false= el usuario no tiene el dinero necesario.   *///
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    public boolean reintegro(Wallet emisor,double dinero) {
-        boolean reintegroCorrecto = true;
-        try {
-            if (dinero < 0) {
-                reintegroCorrecto = false;
-            } else if (emisor.getMoney()>dinero) {
-                emisor.setMoney(emisor.getMoney()-dinero);
-            } else {
-                reintegroCorrecto = false;
-            }
-        }catch(ArithmeticException arithmeticException)
-        {
-            System.out.println("Error aritmetico en el ingreso de utnCoin$");
-        }
-        return reintegroCorrecto;
-    }
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    ///* Parametro : Recibe dos billeteras para realizar la transferencia, emisor transfiere dinero a receptor solamente si dinero es mayor a 0.  *///
-    ///* Retorno:  true=Se realizo correctamente el reintegro | false= el usuario no tiene el dinero necesario.                                   *///
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    public boolean transferencia(Wallet emisor, Wallet receptor, double dinero) {
-        boolean correcto = true;
-        try{
-            if (dinero < 0) {
-                correcto = false;
-            } else if (emisor.getMoney()>=dinero) {
-
-                reintegro(emisor,dinero);
-                ingreso(receptor,dinero);
-            } else {
-                correcto = false;
-            }
-        }catch (ArithmeticException arithmeticException)
-        {
-            System.out.println("Error aritmetico en el ingreso de utnCoin$");
-        }
-        return correcto;
-    }
-
-//------------------------------------------------------------------------------------------------------------------------//
 
 }

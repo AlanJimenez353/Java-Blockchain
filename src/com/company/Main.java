@@ -130,10 +130,6 @@ public class Main {
                                     System.out.println("[Depositar]");
                                     break;
                                 }
-                                case 4: {
-                                    System.out.println("[Comprar UTN Coins]]");
-                                    break;
-                                }
                                 case 0: {
                                     System.out.println("Gracias por usar nuestro programa.");
                                     salir = true;
