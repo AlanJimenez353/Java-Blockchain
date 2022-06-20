@@ -69,7 +69,7 @@ public class Sistema {
         while (comp==false) {
 
             System.out.println("Ingrese el documento del usuario al que quiere enviar dinero \n");
-            document = scan.nextLine();
+            document = ingresarDNI();
             recieber = mapaUsuarios.get(document);
             if (recieber == null) {
                 System.out.println("El documento ingresado no esta registrado en el sistema como un usuario, intentelo de nuevo \n");
@@ -84,11 +84,15 @@ public class Sistema {
                     System.out.println("No puede realizar una transferencia menor a 50 coins, intentelo de nuevo \n");
                     comp=false;
                 }
+                if(amount>getActiveUser().getWallet().getUtnCoins())
+                {
+                    System.out.println("No tenes saldo suficiente para realizar la transaccion");
+                    comp=false;
+                }
             }
         }
         generateNewTransaction(recieber,amount);
         System.out.println("La transaccion fue creada. Una vez validada el dinero sera enviado \n");
-
     }
     public void userOperationsValidateTransactions() throws IOException {
         System.out.println("\n \n \n \n \n \n \n \n \n \n \n \n  \n \n \n \n \n \n \n \n");
@@ -437,12 +441,7 @@ public class Sistema {
         }
 
     }
-    public void mostrarListaUsuarios(){
-        for (Usuario e : listaUsers){
-            System.out.println(e.toString());
-            System.out.println("\n");
-        }
-    }
+
 
 //-------------------------------------------MANEJO HASHMAP USUARIOS----------------------------------------------------
     public void  crearHashMapArchivo(HashMap<String,Usuario>map) throws IOException {
@@ -492,6 +491,45 @@ public class Sistema {
         userpath.delete();
         mapper.writeValue(userpath,mapaUsuarios);
     }
+
+    public void chargeMoneyAllUser()throws IOException{
+        loadUserFile();
+
+        for (HashMap.Entry<String, Usuario> entry : mapaUsuarios.entrySet()) {
+            entry.getValue().getWallet().setMoney(entry.getValue().getWallet().getMoney()+1000);
+        }
+
+        updateUserFile();
+    }
+
+    public void loadDefaultUsers()throws IOException{
+        Usuario uno=new Usuario("Gonzalo Orellano","GonzaOrellano@hotmail.com","Password1","10000001");
+        Usuario dos=new Usuario("Maximiliano Buono","MaximoBuono@hotmail.com","Password1","10000002");
+        Usuario tres=new Usuario("Gabriela Macchi","GabrielaMacchi@hotmail.com","Password1","10000003");
+        Usuario cuatro=new Usuario("Micaela Buono","d@hotmail.com","Password1","10000004");
+        Usuario cinco=new Usuario("Sherlock Holmes","SherlockHolmes@hotmail.com","Password1","10000005");
+        Usuario seis=new Usuario("Mariano Ramirez","MarianoRamirez@hotmail.com","Password1","10000006");
+        Usuario siete=new Usuario("Alan Gimenez","AlanGimenez@hotmail.com","Password1","10000007");
+        Usuario ocho=new Usuario("Leonardo Alonso","LeonardoAlonso@hotmail.com","Password1","10000008");
+        Usuario nueve=new Usuario("Laura Garcia","LauraGarcia@hotmail.com","Password1","10000009");
+        Usuario diez=new Usuario("Marcos fiszbein","MarcosFiszbein@hotmail.com","Password1","10000010");
+
+        Usuario once=new Usuario("Nicolas Ale","NicolasAle@hotmail.com","Password1","40830432");
+
+        mapaUsuarios.put(uno.getDni(),uno);
+        mapaUsuarios.put(dos.getDni(),dos);
+        mapaUsuarios.put(tres.getDni(),tres);
+        mapaUsuarios.put(cuatro.getDni(),cuatro);
+        mapaUsuarios.put(cinco.getDni(),cinco);
+        mapaUsuarios.put(seis.getDni(),seis);
+        mapaUsuarios.put(siete.getDni(),siete);
+        mapaUsuarios.put(ocho.getDni(),ocho);
+        mapaUsuarios.put(nueve.getDni(),nueve);
+        mapaUsuarios.put(diez.getDni(),diez);
+
+        mapaUsuarios.put(once.getDni(),once);
+    }
+
     public void loadUserFile() throws IOException {
 
         ObjectMapper mapper = new ObjectMapper();
@@ -509,6 +547,7 @@ public class Sistema {
             this.mapaUsuarios = mapper.readValue(file, typeRef);
         }else{
             crearHashMapArchivo(mapaUsuarios);
+            loadDefaultUsers();
         }
     }
 
@@ -621,22 +660,22 @@ public class Sistema {
         return confirmacion;
     }
 
-    public void RegistroUsuario() {
+    public Usuario RegistroUsuario() throws IOException {
         int dia, mes, anio;
         String nombre,dni,email,password;
         Scanner input=new Scanner(System.in);
         boolean validarRegistro=false;
-
+        Usuario newUser=null;
         System.out.println("[ Registro de Usuario ]");
         System.out.println("Bienvenido al banco, vamos a iniciar el registro completando los siguientes campos.");
 
-        System.out.println("\n [Ingresar tu nombre y apellido completo]");
+        System.out.println("\n[Ingresar tu nombre y apellido completo]");
         nombre=ingresarUserName();
-        System.out.println("\n [Ingresar tu email]");
+        System.out.println("\n[Ingresar tu email]");
         email=ingresarEmail();
-        System.out.println("\n [Ingresar tu DNI]");
+        System.out.println("\n[Ingresar tu DNI]");
         dni=ingresarDNI();
-        System.out.println("\n [Ingresar tu Password]");
+        System.out.println("\n[Ingresar tu Password]");
         password=ingresarPassword();
 
         System.out.println("[Ingresar fecha de nacimiento]");
@@ -652,6 +691,7 @@ public class Sistema {
                 System.out.println("El usuario con el dni "+dni+" ya existe.");
                 validarRegistro=false;
             } else {
+                System.out.println("Registro realizado correctamente, ya podes ingresar a tu cuenta.");
                 validarRegistro=true;
             }
         }else{
@@ -659,46 +699,61 @@ public class Sistema {
         }
 
         if(validarRegistro) {
-            Usuario newUser=new Usuario(nombre,email,password,dni);
+            newUser=new Usuario(nombre,email,password,dni);
             mapaUsuarios.put(newUser.getDni(), newUser);
             try {
                 addUserToHashMapFile(newUser);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-
         }else{
             System.out.println("El usuario no se registro.");
         }
-
+        return newUser;
     }
 
     //------------------------------------------MENU PRINCIPAL------------------------------------------------------------//
 
     public void opcionesMenuLogin() {
-        System.out.println("   [ Login - Regist ]");
+        System.out.println("\n[Login - Regist]");
         System.out.println(" 1 - Iniciar seccion.");
         System.out.println(" 2 - Registrarse.. ");
         System.out.println(" 0 - Salir");
     }
-    private void opcionesMenuPrincipal(Usuario activeUser) {
+    public void opcionesMenuPrincipal(Usuario activeUser) {
         if(activeUser!=null) {
-            System.out.println("      [ Menu Principal ]");
-            System.out.println(" [ Bienvenido " + activeUser.getNombre() + " ]");
+            System.out.println("\n[ Bienvenido " + activeUser.getNombre() + " ]");
             System.out.println("1 - Transacciones");
             System.out.println("2 - Ver mi perfil");
+            System.out.println("3- Menu ADMIN");
             System.out.println("0 - Salir");
         }
     }
 
-    private void opcionesMenuTransacciones(Usuario activeUser)
+    public void opcionesMenuTransacciones(Usuario activeUser)
     {
         System.out.println("      [ Transacciones ]");
         System.out.println("1- Realizar Transaccion");
         System.out.println("2- Validar Transacciones");
-        System.out.println("3- Validar todas las Transacciones");
-        System.out.println("4- Deposito");
+        System.out.println("3- Mostrar las transacciones del usuario");
+        System.out.println("4- Comprar dinero con UTNcoins");
+        System.out.println("5- Comprar UTNCoins con dinero");
         System.out.println("0 - Salir");
+    }
+
+    public void opcionesMenuMyPerfil()
+    {
+        System.out.println("[Base de datos]");
+        System.out.println("1- Mi perfil");
+        System.out.println("2- Historial de transacciones");
+        System.out.println("0- Salir");
+    }
+    public void opcionesMenuADMIN()
+    {
+        System.out.println("[Panel de ADMIN]");
+        System.out.println("1- Cargar cuentas default al sistema");
+        System.out.println("2- Cargar $1000 a todas las cuentas");
+        System.out.println("3- Validar todas las transacciones");
     }
 
     //----------------------------------Validaciones Login y Registrp------------------------------------------------------//
@@ -724,7 +779,7 @@ public class Sistema {
         Scanner input=new Scanner(System.in);
         try
         {
-            System.out.println(" Ingresar Opcion: ");
+            System.out.println("Ingresar Opcion: ");
             opcion=input.nextInt();
             if(opcion<0 || opcion>=3)
             {

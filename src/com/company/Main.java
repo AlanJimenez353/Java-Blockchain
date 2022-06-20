@@ -1,5 +1,6 @@
 package com.company;
 
+import javax.swing.*;
 import java.io.IOException;
 import java.util.Scanner;
 
@@ -10,14 +11,17 @@ public class Main {
         int option = 1;
         Scanner scan = new Scanner(System.in);
         boolean confirmacion = false;
+        boolean salir=false;
 
-
-        while (option != 0) {
+        do
+        {
             sistem.opcionesMenuLogin();
-            option = scan.nextInt();
-            switch (option) {
+            /////////////////////////////////////
+            ///Menu - Login , Registro y Salir //
+            /////////////////////////////////////
+            switch (sistem.ingresarOpcion()) {
                 case 1: {
-                    System.out.println("[LOGIN]");
+                    sistem.loadUserFile();
                         do {
                             confirmacion = sistem.login();
                             if (confirmacion == false) {
@@ -27,78 +31,205 @@ public class Main {
                                 switch (sistem.ingresarOpcion()) {
                                     case 1: {
                                         confirmacion = false;
+                                        break;
                                     }
                                     case 2: {
                                         confirmacion = true;
                                         sistem.setActiveUser(null);
+                                        salir=true;
                                         break;
                                     }
                                     default: {
                                         System.out.println("[Opcion incorrecta, rehubicado al menu de login]");
                                         confirmacion = false;
+                                        break;
                                     }
                                 }
+                            }else{
+                                System.out.println("Ingreso correctamente, Bienvenido a nuestro banco "+sistem.getActiveUser().getNombre());
+                                salir=true;
+                                option=0;
                             }
-                        } while (confirmacion == false);
+                        }while (confirmacion != true || salir!=true);
                     break;
                 }
                 case 2: {
-                    System.out.println("[REGIST]");
-                    sistem.RegistroUsuario();
+                    System.out.println("[Registro de Usuario]");
+                    Usuario confirmacionRegistro=null;
+                    confirmacionRegistro=sistem.RegistroUsuario();
+                    if(confirmacionRegistro!=null) {
+                        sistem.setActiveUser(confirmacionRegistro);
+                        option = 0;
+                    }
+                    //Si el retorno del registro es exitoso usuario se logea, De lo contrario el usuario es null.
+                    //El usuario se guarda en el File "HashmapUsuarios" cuando se registra.
                     break;
                 }
-
-
+                case 0:
+                {
+                    System.out.println("Gracias por usar nuestro programa.");
+                    sistem.setActiveUser(null);
+                    option=0;
+                    break;
+                }
+                default:
+                {
+                    System.out.println("-> Opcion incorrecta <-");
+                    break;
+                }
             }
-        }
-    }
-}
+        }while(option!=0);
 
+        ////////////////////////////////////////
+        //Reinicio de las variables booleans ///
+        ////////////////////////////////////////
+        salir=false;                         ///
+        confirmacion=false;                  ///
+        option=666;                          ///
+        ////////////////////////////////////////
 
-              /*
-                case 3: {
+        if(sistem.getActiveUser()!=null)
+        {
+            do{
+                sistem.opcionesMenuPrincipal(sistem.getActiveUser());
+                //////////////////////////////////////////////////////////////////
+                ///Menu principal: 1-Transacciones 2-Mi perfil 3-Menu Admin     //
+                //////////////////////////////////////////////////////////////////
+                switch (sistem.ingresarOpcion()) {
+                    case 1: {
+                        salir=false;
+                        do{
+                            sistem.opcionesMenuTransacciones(sistem.getActiveUser());
+                            //////////////////////////////////////////////////////////////////////////////
+                            ///Menu transacciones:                                                      //
+                            ///1-Hacer una transaccion ,2-Validar Transacciones                         //
+                            ///3-Depositar, 4-Comprar UTNCoins   //
+                            //////////////////////////////////////////////////////////////////////////////
+                            switch (sistem.ingresarOpcion()) {
+                                case 1: {
+                                    System.out.println("[Realizar Transaccion]");
+                                    sistem.userOperationMakeTransaction();
+                                    break;
+                                }
+                                case 2: {
+                                    System.out.println("[Transacciones para validar]");
+                                    sistem.userOperationsValidateTransactions();
+                                    break;
+                                }
 
-                    switch (option) {
+                                case 3: {
+                                    System.out.println("[Depositar]");
+                                    break;
+                                }
+                                case 4:{
+                                    System.out.println("[Comprar UTN Coins]]");
+                                    break;
+                                }
+                                case 0:
+                                {
+                                    System.out.println("Gracias por usar nuestro programa.");
+                                    salir=true;
+                                    option=666;
+                                    break;
+                                }
+                                default:
+                                {
+                                    System.out.println("Opcion Incorrecta");
+                                    break;
+                                }
+                            }
+                        }while(salir!=true);
+                    break;
+                }
+                case 2:
+                {
+                    do {
+                    //////////////////////////////////////////////
+                    //Menu datos usuario:                       //
+                    //1-Mi perfil , 2-Historial de transacciones//
+                    //////////////////////////////////////////////
+                    sistem.opcionesMenuMyPerfil();
+                    switch (sistem.ingresarOpcion())
+                    {
                         case 1:
-                            sistem.userOperationMakeTransaction();
-                            break;
-                        case 2:
-                            sistem.userOperationsValidateTransactions();
-                            break;
-                        case 3:
+                        {
                             sistem.userOperationsShowProfile();
                             break;
-                        case 4:
-                            sistem.validateAllTransactions();
-
+                        }
+                        case 2:
+                        {
+                            ///Tira error
+                            sistem.userOperationsShowTransactionHistory();
+                            break;
+                        }
+                        case 0:
+                        {
+                            salir=true;
+                            option=666;
+                            break;
+                        }
                         default:
+                        {
                             System.out.println("Opcion incorrecta");
                             break;
+                        }
                     }
+                    }while(salir!=true);
                     break;
                 }
 
+                    case 3:
+                    {
+                            do {
+                            //////////////////////////////////////////
+                            //Menu de admin:                        //
+                            //1-Cargar base de datos default        //
+                            //2-Agregar $1000 a todas las cuentas   //
+                            //3-Validar todas las transacciones     //
+                            //////////////////////////////////////////
+                            salir=false;
+                            sistem.opcionesMenuADMIN();
+                            switch (sistem.ingresarOpcion()) {
+                                case 1: {
+                                    System.out.println("[Cargar Usuarios por defecto en el sistema]");
+                                    break;
+                                }
+                                case 2: {
+                                    System.out.println("[Agregar $1000 a todas las cuentas]");
+                                    break;
+                                }
+                                case 3: {
+                                    System.out.println("[Validar todas las transacciones]");
+                                    break;
+                                }
+                                case 0: {
+                                    salir=true;
+                                    option=666;
+                                    break;
+                                }
+                                default: {
+                                    System.out.println("Opcion incorrecta.");
+                                    break;
+                                }
+                            }
+                        } while (salir!=true);
+                        break;
+                        }
 
-            switch (option){
-                case 1:
-                    sistem.userOperationsShowProfile();
+                case 0: {
+                    System.out.println("Gracias por usar nuestro programa.");
+                    option = 0;
                     break;
-                case 2:
-                    sistem.userOperationsValidateTransactions();
+                }
+                default: {
+                    System.out.println("Opcion Incorrecta.");
                     break;
-                case 3:
-                    sistem.userOperationMakeTransaction();
-                    break;
-                case 4:
-                    sistem.validateAllTransactions();
-                    break;
-                case 5:
-                    sistem.userOperationsShowTransactionHistory();
+                }
 
-            }
+                }
+
+            }while(option!=0);
         }
+
     }
-                     */
-
-
-
+}
