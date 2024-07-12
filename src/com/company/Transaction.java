@@ -1,10 +1,8 @@
 package com.company;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.time.LocalDate;
+import java.util.*;
 
 public class Transaction implements Serializable {
     private static int identificador;
@@ -13,13 +11,14 @@ public class Transaction implements Serializable {
     private int amount;
     private Wallet sender;
     private Wallet recieber;
-
+    //private LocalDate fechaCreacion = null;
     public Transaction(Wallet recieber, Wallet sender, HashMap<String,Boolean> validators, int amount, int id) {
         this.sender=sender;
         this.recieber=recieber;
         this.amount=amount;
         this.id=id;
         this.validators=validators;
+        //fechaCreacion=LocalDate.now();
     }
 
     public Transaction(){
@@ -74,13 +73,22 @@ public class Transaction implements Serializable {
     this.validators=aux;
     }
 
+    //public LocalDate getFechaCreacion() {
+    //    return fechaCreacion;
+    //}
+
+   // public void setFechaCreacion(LocalDate fechaCreacion) {
+   //     this.fechaCreacion = fechaCreacion;
+   // }
+
     @Override
     public String toString() {
-        return "[Transaction]" +
-                " | ID:" + id +
-                " | Validators:" + validators +
-                " | Amount:" + amount +
-                " | Sender:" + sender.toString() +
-                " | Recieber:" + recieber.toString()+"\n";
+        return "Transaction{" +
+                "id=" + id +
+                ", validators=" + validators +
+                ", amount=" + amount +
+                ", sender=" + sender +
+                ", recieber=" + recieber +
+                '}';
     }
 }

@@ -22,17 +22,15 @@ public class Sistema {
     private HashMap<Integer, Transaction>transactionToValidateMap=new HashMap<>();
     private HashMap<Integer,Transaction>blockchain=new HashMap<>();
 
-    private final double UTNCoinsMax=800000;
-    private final double MoneyMax=800000;
-
-    private final double porcentaje=0.05;
 //-------------------------------------------Constructor ---------------------------------------------------------------
     public Sistema() throws IOException {
         setPaths();
         loadUserFile();
         loadTransactionsToValidateFile();
         loadBlockchain();
-        createSampleData();
+        if(mapaUsuarios.size()<1){
+            createSampleData();
+        }
     }
 
 //-----------------------------------------MANEJO ARCHIVOS--------------------------------------------------------------
@@ -79,6 +77,7 @@ public class Sistema {
 
     }
 //----------------------------------------------USER OPERATIONS---------------------------------------------------------
+    /*
     public void userOperationMakeTransaction() throws IOException {
         int amount=0;
         String document;
@@ -150,7 +149,41 @@ public class Sistema {
             System.out.println("La transaccion fue creada. Una vez validada el dinero sera enviado \n");
         }
 
+        }*/
+public void userOperationMakeTransaction() throws IOException {
+    int amount=0;
+    String document;
+    boolean comp=false;
+    Usuario recieber=new Usuario();
+    Scanner scan = new Scanner(System.in);
+
+    while (comp==false) {
+
+        System.out.println("Ingrese el documento del usuario al que quiere enviar dinero \n");
+        document = scan.nextLine();
+        recieber = mapaUsuarios.get(document);
+        if (recieber == null) {
+            System.out.println("El documento ingresado no esta registrado en el sistema como un usuario, intentelo de nuevo \n");
+        }else if(document.equals(activeUser.getDni())){
+            System.out.println("No se puede enviar dinero a usted mismo... Deje de buscar bugs. Intentelo de nuevo \n");
         }
+        else{
+            comp=true;
+            do {
+                System.out.println("Ingrese el Monto de la transferencia que quiere realizar \n");
+                amount = scan.nextInt();
+                if (amount <= 10) {
+                    System.out.println("No puede realizar una transferencia nula o con monto negativo, intentelo de nuevo \n");
+                } else if (amount > this.activeUser.getWallet().getUtnCoins()) {
+                    System.out.println("Saldo en la Wallet insuficiente\n");
+                }
+            }while (amount <= 10 || amount > this.activeUser.getWallet().getUtnCoins());
+        }
+    }
+    generateNewTransaction(recieber,amount);
+    System.out.println("La transaccion fue creada. Una vez validada los UTNcoins seran enviados \n");
+
+}
     public void userOperationsValidateTransactions() throws IOException {
         System.out.println("\n \n \n \n \n \n \n \n \n \n \n \n  \n \n \n \n \n \n \n \n");
 
@@ -310,8 +343,8 @@ public class Sistema {
                     blockchain.put(entry.getKey(),entry.getValue());
                     integers.add(entry.getKey());
                     // Ustedes se preguntaran que rayos hice aca... yo me pregunto lo mismo, pero funciona
-                     mapaUsuarios.get(getUserByOwnerReference(entry.getValue().getRecieber().getOwnerReference()).getDni()).getWallet().setMoney(entry.getValue().getRecieber().getMoney()+entry.getValue().getAmount());
-                     mapaUsuarios.get(getUserByOwnerReference(entry.getValue().getSender().getOwnerReference()).getDni()).getWallet().setMoney(entry.getValue().getSender().getMoney() - entry.getValue().getAmount());
+                     mapaUsuarios.get(getUserByOwnerReference(entry.getValue().getRecieber().getOwnerReference()).getDni()).getWallet().setUtnCoins(entry.getValue().getRecieber().getUtnCoins()+entry.getValue().getAmount());
+                     mapaUsuarios.get(getUserByOwnerReference(entry.getValue().getSender().getOwnerReference()).getDni()).getWallet().setUtnCoins(entry.getValue().getSender().getUtnCoins() - entry.getValue().getAmount());
                 }
             }
         deleteValidatedTransactions(integers);
@@ -411,6 +444,8 @@ public class Sistema {
         }
         activeUser.getWallet().setUtnCoins(activeUser.getWallet().getUtnCoins()+(2*numberOftransactionsValidated));
         createTransactionsToValidateFile(transactionsAUX);
+        addConfirmedTransactionsToBlockchain();
+
     }
 
 //--------------------------------------------------ADMIN ACTIONS-------------------------------------------------------
@@ -455,61 +490,6 @@ public class Sistema {
         for (HashMap.Entry<String, Usuario> entry : mapaUsuarios.entrySet()) {
             documentKeys.add(entry.getValue().getDni());
         }
-    }
-
-//--------------------------------------------MANEJO ARCHIVO USUARIOS---------------------------------------------------
-    //Agregar Validaciones
-    public ArrayList<Usuario> cargarUsuariosDeArchivo(){
-        ObjectMapper mapper=new ObjectMapper();
-        ArrayList<Usuario>lista=new ArrayList<>();
-        File file=new File(USUARIOS_PATH);
-
-        if(file.isDirectory())
-        {
-            File files[]=file.listFiles();
-            for(int i=0;i<files.length;i++)
-            {
-                try {
-                    Usuario p=mapper.readValue(files[i],Usuario.class);
-                    lista.add(p);
-                }catch (IOException e)
-                {
-                    e.printStackTrace();
-                }
-            }
-        }
-        return lista;
-    }
-    public void AgregarUsuarioAarchivo(Usuario user) throws IOException {
-
-        File newUser=new File(USUARIOS_PATH+"\\"+user.getDni()+".json");
-        ObjectMapper mapper=new ObjectMapper();
-        boolean comp=false;
-        boolean comp2=false;
-        mapper.writeValue(newUser, user);
-    }
-    private void EliminarUsuarioArchivo(Usuario user){
-        ObjectMapper mapper=new ObjectMapper();
-        File file=new File(USUARIOS_PATH);
-        Usuario s=new Usuario();
-        if(file.isDirectory())
-        {
-            File files[]=file.listFiles();
-            for(int i=0;i<files.length;i++)
-            {
-                try {
-                    s=mapper.readValue(files[i],Usuario.class);
-                } catch (IOException e)
-                {
-                    e.printStackTrace();
-                }
-                if (s.getDni().compareTo(user.getDni())==0)
-                {
-                    files[i].delete();
-                }
-            }
-        }
-
     }
 
 
@@ -562,13 +542,6 @@ public class Sistema {
         mapper.writeValue(userpath,mapaUsuarios);
     }
 
-    public void chargeMoneyAllUser()throws IOException{
-        for (HashMap.Entry<String, Usuario> entry : mapaUsuarios.entrySet()) {
-            entry.getValue().getWallet().setMoney(entry.getValue().getWallet().getMoney()+1000);
-        }
-
-        updateUserFile();
-    }
     public void chargeUTNcoinsAllUser()throws IOException{
         for (HashMap.Entry<String, Usuario> entry : mapaUsuarios.entrySet()) {
             entry.getValue().getWallet().setUtnCoins(entry.getValue().getWallet().getUtnCoins()+1000);
@@ -722,25 +695,31 @@ public class Sistema {
         System.out.println("\n[Ingresar tu Password]");
         password=ingresarPassword();
 
-        System.out.println("[Ingresar fecha de nacimiento]");
-        System.out.println("Dia: ");
-        dia=input.nextInt();
-        System.out.println("Mes: ");
-        mes=input.nextInt();
-        System.out.println("Año: ");
-        anio=input.nextInt();
+        try{
+            System.out.println("[Ingresar fecha de nacimiento]");
+            System.out.println("Dia: ");
+            dia=input.nextInt();
+            System.out.println("Mes: ");
+            mes=input.nextInt();
+            System.out.println("Año: ");
+            anio=input.nextInt();
 
-        if(validAge18(LocalDate.of(anio,mes,dia))){
-            if (existUsuario(dni)) {
-                System.out.println("El usuario con el dni "+dni+" ya existe.");
-                validarRegistro=false;
-            } else {
-                System.out.println("Registro realizado correctamente, ya podes ingresar a tu cuenta.");
-                validarRegistro=true;
+
+            if(validAge18(LocalDate.of(anio,mes,dia))){
+                if (existUsuario(dni)) {
+                    System.out.println("El usuario con el dni "+dni+" ya existe.");
+                    validarRegistro=false;
+                } else {
+                    System.out.println("Registro realizado correctamente, ya podes ingresar a tu cuenta.");
+                    validarRegistro=true;
+                }
+            }else{
+                System.out.println("Para registrarse necesitas ser mayor de edad.");
             }
-        }else{
-            System.out.println("Para registrarse necesitas ser mayor de edad.");
+        }   catch (Exception e) {
+            System.out.println("Error! Fecha mal ingresada");
         }
+
 
         if(validarRegistro) {
             newUser=new Usuario(nombre,email,password,dni);
@@ -760,8 +739,8 @@ public class Sistema {
 
     public void opcionesMenuLogin() {
         System.out.println("\n[Login - Regist]");
-        System.out.println(" 1 - Iniciar seccion.");
-        System.out.println(" 2 - Registrarse.. ");
+        System.out.println(" 1 - Login.");
+        System.out.println(" 2 - Registrarse");
         System.out.println(" 0 - Salir");
     }
     public void opcionesMenuPrincipal(Usuario activeUser) {
@@ -779,7 +758,6 @@ public class Sistema {
         System.out.println("      [ Transacciones ]");
         System.out.println("1- Realizar Transaccion");
         System.out.println("2- Validar Transacciones");
-        System.out.println("3- Mostrar las transacciones del usuario");
         System.out.println("0 - Salir");
     }
 
@@ -794,11 +772,11 @@ public class Sistema {
     {
         if(contraseña.equals("utn")) {
             System.out.println("[Panel de ADMIN]");
-            System.out.println("1- Cargar cuentas default al sistema");
-            System.out.println("2- Cargar $1000 a todas las cuentas");
-            System.out.println("3- Cargar UTN$1000 a todas las cuentas");
-            System.out.println("4- Validar todas las transacciones");
-            System.out.println("5- Ver Usuarios cargados en el sistema");
+            System.out.println("1- Cargar UTN$1000 a todas las cuentas");
+            System.out.println("2- Validar todas las transacciones");
+            System.out.println("3- Ver Usuarios cargados en el sistema");
+            System.out.println("0- Volver");
+
             return true;
         }
         else

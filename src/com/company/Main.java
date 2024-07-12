@@ -7,6 +7,7 @@ import java.util.Scanner;
 public class Main {
 
     public static void main(String[] args) throws IOException {
+
         Sistema sistem = new Sistema();
         int option = 1;
         Scanner scan = new Scanner(System.in);
@@ -18,6 +19,7 @@ public class Main {
             /////////////////////////////////////
             ///Menu - Login , Registro y Salir //
             /////////////////////////////////////
+
             switch (sistem.ingresarOpcion()) {
                 case 1: {
                     /////////////////////////
@@ -126,10 +128,6 @@ public class Main {
                                     break;
                                 }
 
-                                case 3: {
-                                    System.out.println("[Depositar]");
-                                    break;
-                                }
                                 case 0: {
                                     System.out.println("Gracias por usar nuestro programa.");
                                     salir = true;
@@ -203,27 +201,19 @@ public class Main {
                         if (sistem.opcionesMenuADMIN(contraseña)) {
                             do {
                                 switch (sistem.ingresarOpcion()) {
+
                                     case 1: {
-                                        System.out.println("[Cargar Usuarios por defecto en el sistema]");
-                                        sistem.createSampleData();
+                                        System.out.println("[Agregar UTN$1000 a todas las cuentas]");
+                                        sistem.chargeUTNcoinsAllUser();
                                         break;
                                     }
                                     case 2: {
-                                        System.out.println("[Agregar $1000 a todas las cuentas]");
-                                        sistem.chargeMoneyAllUser();
-                                        break;
-                                    }
-                                    case 3: {
-                                        System.out.println("[Agregar UTN$1000 a todas las cuentas]");
-                                        sistem.chargeUTNcoinsAllUser();
-                                    }
-                                    case 4: {
                                         System.out.println("[Validar todas las transacciones]");
                                         ///Tira error
                                         sistem.validateAllTransactions();
                                         break;
                                     }
-                                    case 5: {
+                                    case 3: {
                                         System.out.println("[Mapa de usuarios]");
                                         sistem.mostrarHashMapUsuarios();
                                         break;
